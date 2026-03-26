@@ -220,6 +220,34 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
 .empty{padding:1.8rem;text-align:center;color:var(--muted);font-size:.82rem;font-style:italic;border:1px dashed var(--border);}
 
 /* ─── TOAST ─── */
+.attend-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;margin-bottom:1rem;background:var(--s1);border:1px solid var(--border);padding:.85rem 1.1rem;}
+.attend-sel{padding:.3rem .55rem;border:1px solid var(--border);background:var(--s2);color:var(--text);font-family:'Be Vietnam Pro',sans-serif;font-size:.8rem;outline:none;}
+.attend-sv-tab{padding:.35rem .85rem;font-size:.78rem;cursor:pointer;border:1px solid var(--border);background:var(--s2);color:var(--muted);transition:all .15s;}
+.attend-sv-tab.active{background:var(--gold);color:#fff;border-color:var(--gold);}
+.attend-calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:.5rem;}
+.attend-day-hd{text-align:center;font-size:.62rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:.3rem 0;}
+.attend-cell{min-height:56px;border:1px solid var(--border);padding:.3rem .4rem;position:relative;background:var(--s2);cursor:pointer;transition:all .15s;}
+.attend-cell:hover{border-color:var(--gold);}
+.attend-cell.empty{background:transparent;border-color:transparent;cursor:default;}
+.attend-cell.today-cell{border-color:var(--gold);background:rgba(176,125,26,.05);}
+.attend-cell.has-class{background:rgba(176,125,26,.04);}
+.attend-day-num{font-size:.75rem;font-weight:600;color:var(--muted);}
+.attend-cell.today-cell .attend-day-num{color:var(--gold);font-weight:700;}
+.attend-class-chip{margin-top:.2rem;display:flex;flex-direction:column;gap:2px;}
+.attend-chip{font-size:.6rem;padding:.1rem .3rem;border-radius:2px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.chip-present{background:rgba(46,125,70,.15);color:var(--sage);}
+.chip-absent{background:rgba(192,52,26,.12);color:var(--rust);}
+.chip-pending{background:rgba(176,125,26,.12);color:var(--gold);cursor:pointer;}
+.attend-stat-pill{display:flex;align-items:center;gap:.4rem;padding:.3rem .75rem;border-radius:2px;font-size:.75rem;font-weight:600;}
+.pill-present{background:rgba(46,125,70,.1);color:var(--sage);border:1px solid rgba(46,125,70,.2);}
+.pill-absent{background:rgba(192,52,26,.08);color:var(--rust);border:1px solid rgba(192,52,26,.15);}
+.pill-rate{background:rgba(176,125,26,.08);color:var(--gold);border:1px solid rgba(176,125,26,.2);}
+.attend-mark-btn{display:flex;gap:.3rem;margin-top:.3rem;}
+.mark-btn{flex:1;font-size:.58rem;padding:.15rem 0;border:none;cursor:pointer;font-weight:700;border-radius:1px;}
+.mark-present{background:rgba(46,125,70,.18);color:var(--sage);}
+.mark-present:hover{background:rgba(46,125,70,.35);}
+.mark-absent{background:rgba(192,52,26,.12);color:var(--rust);}
+.mark-absent:hover{background:rgba(192,52,26,.28);}
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:.72rem 1.3rem;font-size:.82rem;z-index:999;opacity:0;transform:translateY(6px);transition:all .3s;pointer-events:none;background:var(--text);color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.15);}
 .toast.show{opacity:1;transform:translateY(0);}
 
@@ -290,6 +318,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
     <div class="nv"    id="nv-classes" onclick="showPg('classes',this)">🏫 Lớp học</div>
     <div class="nv"    id="nv-books"   onclick="showPg('books',this)">📅 Lịch book 1-1</div>
     <div class="nv"    id="nv-slots"   onclick="showPg('slots',this)">⏰ Khung giờ</div>
+    <div class="nv"    id="nv-attend"  onclick="showPg('attend',this)">📋 Điểm danh</div>
   </div>
   <div class="sb-students">
     <div class="sb-lbl">Học viên</div>
@@ -454,6 +483,46 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
             <div class="card-hd"><span>📅 Lịch học</span><button class="btn bg" onclick="openM('m-sched')">+ Thêm</button></div>
             <div id="sched-list"></div>
           </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+    <!-- ATTENDANCE PAGE -->
+    <div class="pg" id="pg-attend">
+      <div class="attend-toolbar">
+        <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;">
+          <label style="font-size:.72rem;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Tháng</label>
+          <select id="attend-month-sel" class="attend-sel" onchange="renderAttendPage()"></select>
+          <select id="attend-year-sel" class="attend-sel" onchange="renderAttendPage()"></select>
+        </div>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <button class="btn bg" style="font-size:.75rem;" onclick="openM('m-manual-attend-pick')">+ Điểm danh thủ công</button>
+        </div>
+      </div>
+
+      <!-- View mode: Individual / Class -->
+      <div style="display:flex;gap:0;margin-bottom:1rem;border:1px solid var(--border);width:fit-content;">
+        <button id="attend-mode-sv" class="btn bp" style="border-radius:0;font-size:.77rem;" onclick="setAttendMode('sv')">👤 Cá nhân</button>
+        <button id="attend-mode-cls" class="btn bg" style="border-radius:0;font-size:.77rem;" onclick="setAttendMode('cls')">👥 Theo lớp</button>
+      </div>
+
+      <!-- Individual mode -->
+      <div id="attend-sv-mode">
+        <div id="attend-sv-tabs" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem;"></div>
+        <div id="attend-summary" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;"></div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div id="attend-grid-content" style="padding:1.3rem;"></div>
+        </div>
+      </div>
+
+      <!-- Class mode -->
+      <div id="attend-cls-mode" style="display:none;">
+        <div id="attend-cls-tabs" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem;"></div>
+        <div id="attend-cls-summary" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;"></div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div id="attend-cls-content" style="padding:1.3rem;"></div>
         </div>
       </div>
     </div>
@@ -636,6 +705,37 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
   </div>
 </div>
 
+<!-- MANUAL ATTEND PICK MODAL -->
+<div class="ov" id="m-manual-attend-pick">
+  <div class="modal" style="max-width:360px;">
+    <h3>📋 Điểm danh thủ công</h3>
+    <div class="fl"><label>Học viên</label>
+      <select id="ma-sv-sel" class="attend-sel" style="width:100%;"></select>
+    </div>
+    <div class="fl"><label>Ngày</label>
+      <input id="ma-date-inp" type="date" style="width:100%;padding:.45rem .7rem;border:1px solid var(--border);background:var(--s2);color:var(--text);font-family:'Be Vietnam Pro',sans-serif;font-size:.85rem;">
+    </div>
+    <div style="display:flex;gap:.7rem;margin-top:1rem;">
+      <button class="btn" style="flex:1;background:#2E7D46;color:#fff;" onclick="submitManualAttend('present')">✓ Có mặt</button>
+      <button class="btn" style="flex:1;background:var(--rust);color:#fff;" onclick="submitManualAttend('absent')">✗ Vắng</button>
+    </div>
+    <button class="btn bg" style="width:100%;margin-top:.5rem;" onclick="closeM('m-manual-attend-pick')">Huỷ</button>
+  </div>
+</div>
+
+<!-- MANUAL ATTEND MODAL -->
+<div class="ov" id="m-manual-attend">
+  <div class="modal" style="max-width:320px;text-align:center;">
+    <h3 style="margin-bottom:.4rem;">📋 Điểm danh</h3>
+    <div id="ma-label" style="font-size:.82rem;color:var(--muted);margin-bottom:1.4rem;"></div>
+    <div style="display:flex;gap:.7rem;justify-content:center;">
+      <button class="btn" style="flex:1;background:#2E7D46;color:#fff;padding:.7rem;font-size:.9rem;" onclick="doManualAttend('present')">✓ Có mặt</button>
+      <button class="btn" style="flex:1;background:var(--rust);color:#fff;padding:.7rem;font-size:.9rem;" onclick="doManualAttend('absent')">✗ Vắng</button>
+    </div>
+    <button class="btn bg" style="width:100%;margin-top:.7rem;" onclick="closeM('m-manual-attend')">Huỷ</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- Firebase compat SDK -->
@@ -665,6 +765,7 @@ var allProgress  = {};
 var allSubs      = {};
 var allGoals     = {};
 var allDayLinks  = {};
+var allAttendance = {};
 
 /* ═══ HELPERS ═══ */
 function today(){
@@ -776,6 +877,10 @@ db.ref('goals').on('value', function(snap){
   allGoals = snap.val() || {};
   if(document.getElementById('pg-dash').classList.contains('on')) renderDash();
 });
+db.ref('attendance').on('value', function(snap){
+  allAttendance = snap.val() || {};
+  if(document.getElementById('pg-attend').classList.contains('on')) renderAttendPage();
+});
 db.ref('daylinks').on('value', function(snap){
   allDayLinks = snap.val() || {};
   if(CID && document.getElementById('hw-list')) renderHw(allStudents[CID]?(allStudents[CID].homework||[]):[]);
@@ -802,7 +907,7 @@ function showPg(name, el){
   document.querySelectorAll('.nv').forEach(function(n){ n.classList.remove('on'); });
   document.getElementById('pg-'+name).classList.add('on');
   if(el) el.classList.add('on');
-  var titles={dash:'Tổng quan',scores:'Duyệt điểm học viên',books:'Lịch book 1-1',slots:'Khung giờ trống',classes:'🏫 Lớp học'};
+  var titles={dash:'Tổng quan',scores:'Duyệt điểm học viên',books:'Lịch book 1-1',slots:'Khung giờ trống',classes:'🏫 Lớp học',attend:'📋 Điểm danh'};
   document.getElementById('tb-title').textContent=titles[name]||'';
   document.getElementById('tb-sub').textContent='';
   document.getElementById('tb-acts').innerHTML='';
@@ -811,6 +916,7 @@ function showPg(name, el){
   if(name==='books')   renderBooks();
   if(name==='slots')   renderSlots();
   if(name==='classes'){ CLS_ID=null; exitClsDetail(); renderClsGrid(); }
+  if(name==='attend')  showPgAttend();
 }
 
 function selSv(id){
@@ -1818,6 +1924,237 @@ function renderClsHwList(cls){
 }
 
 /* ═══ INIT ═══ */
+/* ═══ ATTENDANCE ═══ */
+var attendSvId = null;
+var attendClsId = null;
+var attendMode = 'sv';
+
+function setAttendMode(mode){
+  attendMode=mode;
+  document.getElementById('attend-sv-mode').style.display=mode==='sv'?'block':'none';
+  document.getElementById('attend-cls-mode').style.display=mode==='cls'?'block':'none';
+  document.getElementById('attend-mode-sv').className='btn '+(mode==='sv'?'bp':'bg');
+  document.getElementById('attend-mode-cls').className='btn '+(mode==='cls'?'bp':'bg');
+  renderAttendPage();
+}
+
+function initAttendSelectors(){
+  var mSel=document.getElementById('attend-month-sel');
+  var ySel=document.getElementById('attend-year-sel');
+  if(mSel.options.length) return;
+  ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6',
+   'Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'
+  ].forEach(function(m,i){ var o=document.createElement('option'); o.value=i+1; o.textContent=m; mSel.appendChild(o); });
+  var yr=new Date().getFullYear();
+  for(var y=yr-1;y<=yr+1;y++){ var o=document.createElement('option'); o.value=y; o.textContent=y; ySel.appendChild(o); }
+  mSel.value=new Date().getMonth()+1;
+  ySel.value=yr;
+}
+
+function showPgAttend(){
+  initAttendSelectors();
+  var maSel=document.getElementById('ma-sv-sel');
+  if(maSel){ maSel.innerHTML=''; Object.values(allStudents).sort(function(a,b){return a.name.localeCompare(b.name);}).forEach(function(s){ var o=document.createElement('option'); o.value=s.id; o.textContent=s.name; maSel.appendChild(o); }); }
+  document.getElementById('ma-date-inp').value=today();
+  var svIds=Object.keys(allStudents);
+  if(!attendSvId&&svIds.length) attendSvId=svIds[0];
+  var clsIds=Object.keys(allClasses||{});
+  if(!attendClsId&&clsIds.length) attendClsId=clsIds[0];
+  renderAttendPage();
+}
+
+function renderAttendPage(){
+  initAttendSelectors();
+  if(attendMode==='sv') renderAttendSv();
+  else renderAttendCls();
+}
+
+function renderAttendSv(){
+  var month=parseInt(document.getElementById('attend-month-sel').value);
+  var year=parseInt(document.getElementById('attend-year-sel').value);
+  var td=today();
+  var tabsEl=document.getElementById('attend-sv-tabs'); tabsEl.innerHTML='';
+  var svIds=Object.keys(allStudents).sort(function(a,b){return allStudents[a].name.localeCompare(allStudents[b].name);});
+  if(!svIds.length){ tabsEl.innerHTML='<div style="font-size:.78rem;color:var(--muted)">Chưa có học viên</div>'; return; }
+  if(!attendSvId||!allStudents[attendSvId]) attendSvId=svIds[0];
+  svIds.forEach(function(sid){
+    var btn=document.createElement('button'); btn.className='attend-sv-tab'+(sid===attendSvId?' active':'');
+    btn.textContent=allStudents[sid].name;
+    btn.onclick=function(){ attendSvId=sid; renderAttendSv(); };
+    tabsEl.appendChild(btn);
+  });
+  var s=allStudents[attendSvId];
+  var svAttend=allAttendance[attendSvId]||{};
+  var scheduledDates={};
+  (s.schedule||[]).forEach(function(sc){
+    var p=sc.date.split('-');
+    if(parseInt(p[0])===year&&parseInt(p[1])===month) scheduledDates[sc.date]={title:sc.title,time:sc.time||''};
+  });
+  var present=0,absent=0,schTotal=0;
+  Object.keys(scheduledDates).forEach(function(d){
+    if(d<=td){ schTotal++;
+      var rec=svAttend[d];
+      if(rec&&rec.status==='present') present++;
+      else if(rec&&rec.status==='absent') absent++;
+    }
+  });
+  Object.keys(svAttend).forEach(function(d){
+    var p=d.split('-');
+    if(parseInt(p[0])===year&&parseInt(p[1])===month&&!scheduledDates[d]){
+      if(svAttend[d].status==='present') present++;
+      else if(svAttend[d].status==='absent') absent++;
+    }
+  });
+  var unmarked=Object.keys(scheduledDates).filter(function(d){return d<=td&&!svAttend[d];}).length;
+  var rate=schTotal?Math.round(present/schTotal*100):null;
+  var sumEl=document.getElementById('attend-summary'); sumEl.innerHTML=
+    '<div class="attend-stat-pill pill-present">✓ Có mặt: '+present+'</div>'+
+    '<div class="attend-stat-pill pill-absent">✗ Vắng: '+absent+'</div>'+
+    (unmarked?'<div class="attend-stat-pill" style="background:rgba(176,125,26,.08);color:var(--gold);border:1px solid rgba(176,125,26,.2);">⏳ Chưa điểm: '+unmarked+'</div>':'')+
+    (rate!==null?'<div class="attend-stat-pill pill-rate">📊 Chuyên cần: '+rate+'%</div>':'');
+  renderCalendar(document.getElementById('attend-grid-content'),year,month,td,scheduledDates,svAttend,attendSvId,s.name);
+}
+
+function renderAttendCls(){
+  var month=parseInt(document.getElementById('attend-month-sel').value);
+  var year=parseInt(document.getElementById('attend-year-sel').value);
+  var td=today();
+  var clsTabsEl=document.getElementById('attend-cls-tabs'); clsTabsEl.innerHTML='';
+  var clsIds=Object.keys(allClasses||{});
+  if(!clsIds.length){ clsTabsEl.innerHTML='<div style="font-size:.78rem;color:var(--muted)">Chưa có lớp nào</div>'; return; }
+  if(!attendClsId||!allClasses[attendClsId]) attendClsId=clsIds[0];
+  clsIds.forEach(function(cid){
+    var btn=document.createElement('button'); btn.className='attend-sv-tab'+(cid===attendClsId?' active':'');
+    btn.textContent=allClasses[cid].name;
+    btn.onclick=function(){ attendClsId=cid; renderAttendCls(); };
+    clsTabsEl.appendChild(btn);
+  });
+  var cls=allClasses[attendClsId];
+  var members=(cls.members||[]).map(function(sid){return allStudents[sid];}).filter(Boolean);
+  var gc=document.getElementById('attend-cls-content'); gc.innerHTML='';
+  if(!members.length){ gc.innerHTML='<div class="empty">Lớp chưa có học viên</div>'; return; }
+  var scheduledDates={};
+  members.forEach(function(sv){
+    (sv.schedule||[]).forEach(function(sc){
+      var p=sc.date.split('-');
+      if(parseInt(p[0])===year&&parseInt(p[1])===month) scheduledDates[sc.date]={title:sc.title,time:sc.time||''};
+    });
+  });
+  members.forEach(function(sv){
+    Object.keys(allAttendance[sv.id]||{}).forEach(function(d){
+      var p=d.split('-');
+      if(parseInt(p[0])===year&&parseInt(p[1])===month&&!scheduledDates[d]) scheduledDates[d]={title:'Thủ công',time:''};
+    });
+  });
+  var sortedDates=Object.keys(scheduledDates).sort();
+  if(!sortedDates.length){ gc.innerHTML='<div class="empty">Không có buổi học nào tháng này</div>'; return; }
+  var table=document.createElement('div'); table.style.cssText='overflow-x:auto;';
+  var tbl=document.createElement('table'); tbl.style.cssText='width:100%;border-collapse:collapse;font-size:.78rem;';
+  var thead=document.createElement('thead');
+  var hrow=document.createElement('tr');
+  var th0=document.createElement('th'); th0.style.cssText='text-align:left;padding:.5rem .7rem;border-bottom:2px solid var(--border);min-width:130px;position:sticky;left:0;background:var(--s1);z-index:2;'; th0.textContent='Học viên'; hrow.appendChild(th0);
+  sortedDates.forEach(function(d){
+    var th=document.createElement('th'); th.style.cssText='padding:.4rem .5rem;border-bottom:2px solid var(--border);text-align:center;font-family:"JetBrains Mono",monospace;font-size:.65rem;min-width:56px;';
+    var p=d.split('-'); th.innerHTML=p[2]+'/'+p[1]+'<br><span style="font-weight:400;opacity:.5">'+(scheduledDates[d].time||'')+'</span>';
+    hrow.appendChild(th);
+  });
+  var thS=document.createElement('th'); thS.style.cssText='padding:.4rem .7rem;border-bottom:2px solid var(--border);text-align:center;min-width:80px;'; thS.textContent='Chuyên cần'; hrow.appendChild(thS);
+  thead.appendChild(hrow); tbl.appendChild(thead);
+  var tbody=document.createElement('tbody');
+  members.forEach(function(sv){
+    var svAtt=allAttendance[sv.id]||{};
+    var tr=document.createElement('tr'); tr.style.cssText='border-bottom:1px solid var(--border);';
+    var td0=document.createElement('td'); td0.style.cssText='padding:.45rem .7rem;font-weight:500;position:sticky;left:0;background:var(--s1);z-index:1;'; td0.textContent=sv.name; tr.appendChild(td0);
+    var pCount=0, totalPast=0;
+    sortedDates.forEach(function(d){
+      var cell=document.createElement('td'); cell.style.cssText='text-align:center;padding:.3rem;cursor:pointer;';
+      var rec=svAtt[d]; var isPastDate=d<=td;
+      if(rec){
+        cell.innerHTML=rec.status==='present'
+          ?'<span class="attend-chip chip-present" title="Click để đổi">✓</span>'
+          :'<span class="attend-chip chip-absent" title="Click để đổi">✗</span>';
+        if(isPastDate){ if(rec.status==='present') pCount++; totalPast++; }
+      } else if(isPastDate){
+        cell.innerHTML='<span style="font-size:.8rem;color:var(--muted);opacity:.4;">—</span>'; totalPast++;
+      } else {
+        cell.innerHTML='<span style="font-size:.65rem;opacity:.2;">·</span>';
+      }
+      (function(svid,date,name){ cell.onclick=function(){ openManualAttend(svid,date,name); }; })(sv.id,d,sv.name);
+      tr.appendChild(cell);
+    });
+    var rate=totalPast?Math.round(pCount/totalPast*100):null;
+    var tdS=document.createElement('td'); tdS.style.cssText='text-align:center;font-weight:700;font-size:.8rem;color:'+(rate===null?'var(--muted)':rate>=80?'var(--sage)':rate>=60?'var(--gold)':'var(--rust)')+';';
+    tdS.textContent=rate!==null?(rate+'%'):'—'; tr.appendChild(tdS);
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody); table.appendChild(tbl); gc.appendChild(table);
+}
+
+function renderCalendar(gc,year,month,td,scheduledDates,svAttend,svId,svName){
+  gc.innerHTML='';
+  var firstDay=(new Date(year,month-1,1).getDay()+6)%7;
+  var daysInMonth=new Date(year,month,0).getDate();
+  var dayHds=['T2','T3','T4','T5','T6','T7','CN'];
+  var hdr=document.createElement('div'); hdr.className='attend-calendar';
+  dayHds.forEach(function(d){ var h=document.createElement('div'); h.className='attend-day-hd'; h.textContent=d; hdr.appendChild(h); });
+  gc.appendChild(hdr);
+  var grid=document.createElement('div'); grid.className='attend-calendar';
+  for(var e=0;e<firstDay;e++){ var ec=document.createElement('div'); ec.className='attend-cell empty'; grid.appendChild(ec); }
+  for(var day=1;day<=daysInMonth;day++){
+    var dateStr=year+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    var rec=svAttend[dateStr]||null;
+    var sched=scheduledDates[dateStr]||null;
+    var isPast=dateStr<=td;
+    var cell=document.createElement('div');
+    cell.className='attend-cell'+(dateStr===td?' today-cell':'')+(sched?' has-class':'');
+    var numEl=document.createElement('div'); numEl.className='attend-day-num'; numEl.textContent=day; cell.appendChild(numEl);
+    var chip=document.createElement('div'); chip.className='attend-class-chip';
+    if(rec){
+      chip.innerHTML='<span class="attend-chip '+(rec.status==='present'?'chip-present':'chip-absent')+'">'+(rec.status==='present'?'✓ Có mặt':'✗ Vắng')+'</span>';
+      var btns=document.createElement('div'); btns.className='attend-mark-btn';
+      btns.innerHTML='<button class="mark-btn mark-present" onclick="markAttend(\''+svId+'\',\''+dateStr+'\',\'present\')">✓</button>'+
+                     '<button class="mark-btn mark-absent" onclick="markAttend(\''+svId+'\',\''+dateStr+'\',\'absent\')">✗</button>';
+      chip.appendChild(btns);
+    } else if(sched&&isPast){
+      var btns2=document.createElement('div'); btns2.className='attend-mark-btn';
+      btns2.innerHTML='<button class="mark-btn mark-present" onclick="markAttend(\''+svId+'\',\''+dateStr+'\',\'present\')">✓ Có mặt</button>'+
+                      '<button class="mark-btn mark-absent" onclick="markAttend(\''+svId+'\',\''+dateStr+'\',\'absent\')">✗ Vắng</button>';
+      chip.appendChild(btns2);
+    } else if(sched){
+      chip.innerHTML='<span class="attend-chip chip-pending">📅 '+(sched.time||'Lịch học')+'</span>';
+    }
+    cell.appendChild(chip);
+    if(!sched&&isPast){
+      cell.style.cursor='pointer';
+      (function(d2,n){ cell.onclick=function(){ openManualAttend(svId,d2,n); }; })(dateStr,svName);
+    }
+    grid.appendChild(cell);
+  }
+  gc.appendChild(grid);
+}
+
+function openManualAttend(sid,date,name){
+  var box=document.getElementById('m-manual-attend'); if(!box) return;
+  document.getElementById('ma-label').textContent='Điểm danh '+isoToDMY(date)+' — '+name;
+  box.dataset.sid=sid; box.dataset.date=date; box.classList.add('open');
+}
+function doManualAttend(status){
+  var box=document.getElementById('m-manual-attend');
+  markAttend(box.dataset.sid,box.dataset.date,status);
+  box.classList.remove('open');
+}
+function submitManualAttend(status){
+  var sid=document.getElementById('ma-sv-sel').value;
+  var date=document.getElementById('ma-date-inp').value;
+  if(!sid||!date){ alert('Chọn học viên và ngày!'); return; }
+  markAttend(sid,date,status);
+  closeM('m-manual-attend-pick');
+}
+function markAttend(sid,date,status){
+  db.ref('attendance/'+sid+'/'+date).set({status:status,markedAt:new Date().toISOString()});
+  toast(status==='present'?'✓ Đã điểm danh: Có mặt':'✗ Đã điểm danh: Vắng',status==='present');
+}
+
 window.addEventListener('load', function(){
   renderDash();
 });
