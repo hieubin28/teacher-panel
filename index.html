@@ -297,25 +297,6 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
 .add-sv-to-cls select:focus{border-color:var(--gold);}
 .cls-hw-prog-bar{height:4px;background:var(--line);margin:.4rem 0 .1rem;}
 .cls-hw-prog-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--gold));transition:width .4s;}
-
-/* ─── REAL-TIME LIVE INDICATOR ─── */
-.live-dot{
-  font-size:.5rem;color:var(--sage);
-  animation:livePulse 2s ease-in-out infinite;
-  vertical-align:middle;margin-left:.2rem;
-}
-@keyframes livePulse{
-  0%,100%{opacity:1;}
-  50%{opacity:.25;}
-}
-/* Flash highlight when data just updated */
-@keyframes flashUpdate{
-  0%{background:rgba(46,125,70,.15);}
-  100%{background:transparent;}
-}
-.hw-sheet.just-updated{
-  animation:flashUpdate .8s ease forwards;
-}
 </style>
 </head>
 <body>
@@ -584,7 +565,7 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
             <div id="mod-list"></div>
           </div>
           <div class="card">
-            <div class="card-hd"><span>📋 BTVN (Bài tập về nhà) <span class="live-dot" title="Cập nhật real-time">●</span></span><button class="btn bg" onclick="openM('m-hw')">+ Thêm ngày</button></div>
+            <div class="card-hd"><span>📋 BTVN (Bài tập về nhà)</span><button class="btn bg" onclick="openM('m-hw')">+ Thêm ngày</button></div>
             <div id="hw-list"></div>
           </div>
           <div class="card">
@@ -1004,16 +985,13 @@ db.ref('progress').on('value', function(snap){
 });
 db.ref('submissions').on('value', function(snap){
   allSubs = snap.val() || {};
-  // Cập nhật BTVN học viên đang xem
   if(CID && allStudents[CID]){
     renderHw(allStudents[CID].homework||[]);
     renderSvProgress(allStudents[CID]);
   }
-  // Cập nhật BTVN lớp nếu đang mở
   if(document.getElementById('cls-hw-list') && typeof CLS_ID !== 'undefined' && CLS_ID && allClasses[CLS_ID]){
     renderClsHwList(allClasses[CLS_ID]);
   }
-  // Cập nhật dashboard (số liệu tổng quan)
   if(document.getElementById('pg-dash').classList.contains('on')) renderDash();
 });
 db.ref('goals').on('value', function(snap){
@@ -1022,19 +1000,15 @@ db.ref('goals').on('value', function(snap){
 });
 db.ref('attendance').on('value', function(snap){
   allAttendance = snap.val() || {};
-  // attend is embedded in dash, rendered by renderDash
 });
 db.ref('daylinks').on('value', function(snap){
   allDayLinks = snap.val() || {};
-  // Cập nhật BTVN học viên đang xem
   if(CID && allStudents[CID]){
     renderHw(allStudents[CID].homework||[]);
   }
-  // Cập nhật BTVN lớp nếu đang mở
   if(document.getElementById('cls-hw-list') && typeof CLS_ID !== 'undefined' && CLS_ID && allClasses[CLS_ID]){
     renderClsHwList(allClasses[CLS_ID]);
   }
-  // Cập nhật dashboard
   if(document.getElementById('pg-dash').classList.contains('on')) renderDash();
 });
 
@@ -1664,31 +1638,19 @@ function saveHw(){
 function renderHw(hw){
   var el=document.getElementById('hw-list');
   if(!hw||!hw.length){ el.innerHTML='<div class="empty">Chưa có BTVN nào</div>'; return; }
-  // Snapshot state cũ để detect thay đổi (flash)
-  var prevState={};
-  el.querySelectorAll('.hw-sheet[data-hwid]').forEach(function(s){
-    prevState[s.dataset.hwid]={pct:s.dataset.pct, link:s.dataset.link};
-  });
   el.innerHTML='';
   var svSubs=(allSubs[CID])||{};
   hw.slice().sort(function(a,b){return b.date.localeCompare(a.date);}).forEach(function(h){
     var subCount=0;
-    HW_SECTIONS.forEach(function(sec){ (h[sec]||[]).forEach(function(_,i){ if(svSubs[h.id+'_'+sec+'_'+i]) subCount++; }); });
+    HW_SECTIONS.forEach(function(sec){ (h[sec]||[]).forEach(function(_,i){
+      var sub=svSubs[h.id+'_'+sec+'_'+i];
+      if(sub && (sub.link || sub.ticked)) subCount++;
+    }); });
     var totalItems=0;
     HW_SECTIONS.forEach(function(sec){ totalItems+=(h[sec]||[]).length; });
-    var sheet=document.createElement('div');
+    var sheet=document.createElement('div'); sheet.className='hw-sheet';
+    // Daily link from student
     var svDayLink=(allDayLinks[CID]&&allDayLinks[CID][h.id])||null;
-    var progressPct=totalItems?Math.round(subCount/totalItems*100):0;
-    var curLink=svDayLink?svDayLink.link:'';
-    sheet.className='hw-sheet';
-    sheet.dataset.hwid=h.id;
-    sheet.dataset.pct=progressPct;
-    sheet.dataset.link=curLink;
-    // Flash nếu có thay đổi so với lần render trước
-    if(prevState[h.id] && (prevState[h.id].pct !== String(progressPct) || prevState[h.id].link !== curLink)){
-      sheet.classList.add('just-updated');
-    }
-    // Link tổng hợp
     var dayLinkHtml='<div class="hw-daylink '+(svDayLink?'has-link':'no-link')+'">'
       +'<span class="hw-daylink-lbl">🔗 Link tổng hợp:</span>';
     if(svDayLink){
@@ -1698,7 +1660,6 @@ function renderHw(hw){
       dayLinkHtml+='<span style="font-size:.74rem;color:var(--muted);font-style:italic">Chưa nộp</span>';
     }
     dayLinkHtml+='</div>';
-    // Sections
     var secsHtml='';
     HW_SECTIONS.forEach(function(sec){
       var items=h[sec]||[]; if(!items.length) return;
@@ -1707,31 +1668,29 @@ function renderHw(hw){
         var linkLabel=sec==='practice'?'🔗 Xem đề':'🔗 Bài tập';
         var teacherLink=item.link?'<a class="hw-link-a" href="'+escHtml(item.link)+'" target="_blank">'+linkLabel+'</a>':'';
         var sub=svSubs[h.id+'_'+sec+'_'+i];
-        var subHtml=sub
-          ?'<a class="hw-sub-link" href="'+escHtml(sub.link)+'" target="_blank">📤 Bài nộp</a><span class="hw-sub-time">'+fmtTimeT(sub.submittedAt)+'</span>'
-          :'<span class="hw-sub-empty">Chưa nộp</span>';
+        var subHtml;
+        if(!sub){
+          subHtml='<span class="hw-sub-empty">Chưa nộp</span>';
+        } else if(sub.link){
+          // Có link thật
+          subHtml='<a class="hw-sub-link" href="'+escHtml(sub.link)+'" target="_blank">📤 Bài nộp</a>'
+                 +'<span class="hw-sub-time">'+fmtTimeT(sub.submittedAt)+'</span>';
+        } else if(sub.ticked){
+          // Tick hoàn thành nhưng không gắn link
+          subHtml='<span style="font-size:.68rem;font-weight:600;color:var(--sage);padding:.18rem .5rem;border:1px solid rgba(46,125,70,.25);">✓ Đã hoàn thành</span>'
+                 +'<span class="hw-sub-time">'+fmtTimeT(sub.tickedAt)+'</span>';
+        } else {
+          subHtml='<span class="hw-sub-empty">Chưa nộp</span>';
+        }
         var descHtml=item.desc?'<div class="hw-item-desc">'+item.desc+'</div>':'';
         secsHtml+='<div class="hw-link-li" style="flex-direction:column;align-items:flex-start;gap:.2rem;"><div style="display:flex;align-items:center;gap:.45rem;width:100%"><span class="hw-link-text">'+escHtml(item.text||'—')+'</span><div class="hw-link-actions">'+teacherLink+subHtml+'</div></div>'+descHtml+'</div>';
       });
       secsHtml+='</div>';
     });
+    var progressPct=totalItems?Math.round(subCount/totalItems*100):0;
     var progColor=progressPct===100?'var(--sage)':progressPct>0?'var(--gold)':'var(--muted)';
     var hwDateDisplay=h.endDate&&h.endDate!==h.date?isoToDMY(h.date)+' → '+isoToDMY(h.endDate):isoToDMY(h.date);
-    // Progress bar mini
-    var progBarHtml='<div style="display:flex;align-items:center;gap:.4rem;">'
-      +'<div style="width:60px;height:4px;background:var(--line);border-radius:2px;overflow:hidden;">'
-      +'<div style="width:'+progressPct+'%;height:100%;background:'+progColor+';transition:width .4s;"></div></div>'
-      +'<span style="font-size:.7rem;font-weight:600;color:'+progColor+';">'
-      +(progressPct===100?'✓ Xong':subCount+'/'+totalItems+'</span>');
-    if(svDayLink){
-      progBarHtml+=' <span style="font-size:.68rem;color:var(--sage);font-weight:600;">🔗 Đã link</span>';
-    }
-    progBarHtml+='</div>';
-    sheet.innerHTML='<div class="hw-sheet-hd"><div><div class="hw-sheet-date">'+hwDateDisplay+'</div>'+(h.label?'<div class="hw-sheet-label">'+escHtml(h.label)+'</div>':'')+'</div>'
-      +'<div style="display:flex;align-items:center;gap:.6rem;">'+progBarHtml
-      +'<button class="btn bg" style="font-size:.72rem;padding:.3rem .65rem;" onclick="openHwModal(\''+h.id+'\')">✏️</button>'
-      +'<button class="rm" onclick="rmHw(\''+h.id+'\')">✕</button></div></div>'
-      +dayLinkHtml+(secsHtml||'<div style="font-size:.75rem;color:var(--muted)">Chưa có nội dung</div>');
+    sheet.innerHTML='<div class="hw-sheet-hd"><div><div class="hw-sheet-date">'+hwDateDisplay+'</div>'+(h.label?'<div class="hw-sheet-label">'+escHtml(h.label)+'</div>':'')+'</div><div style="display:flex;align-items:center;gap:.6rem">'+(secsHtml?'<div style="font-size:.7rem;color:'+progColor+';">'+progressPct+'%</div>':'')+'<span style="font-size:.7rem;font-weight:600;color:'+progColor+'">'+(progressPct===100?'✓ Hoàn thành':subCount+'/'+totalItems+' đã nộp')+'</span><button class="btn bg" style="font-size:.72rem;padding:.3rem .65rem;" onclick="openHwModal(\''+h.id+'\')">✏️</button><button class="rm" onclick="rmHw(\''+h.id+'\')">✕</button></div></div>'+dayLinkHtml+(secsHtml||'<div style="font-size:.75rem;color:var(--muted)">Chưa có nội dung</div>');
     el.appendChild(sheet);
   });
 }
@@ -2335,7 +2294,11 @@ function renderClsHwList(cls){
       var svSubs = allSubs[svId]||{};
       var subItems = 0, tot = 0;
       HW_SECTIONS.forEach(function(sec){
-        (h[sec]||[]).forEach(function(_,i){ tot++; if(svSubs[h.id+'_'+sec+'_'+i]) subItems++; });
+        (h[sec]||[]).forEach(function(_,i){
+          tot++;
+          var sub=svSubs[h.id+'_'+sec+'_'+i];
+          if(sub && (sub.link || sub.ticked)) subItems++;
+        });
       });
       if(tot > hwTotal) hwTotal = tot;
       if(hasLink) doneCount++;
