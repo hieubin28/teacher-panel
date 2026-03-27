@@ -322,6 +322,11 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
   </div>
   <div class="sb-students">
     <div class="sb-lbl">Học viên</div>
+    <div style="padding:0 .7rem .5rem;">
+      <input id="sb-search" type="text" placeholder="🔍 Tìm học viên..." oninput="filterSvList(this.value)"
+        style="width:100%;padding:.38rem .6rem;background:rgba(255,255,255,.06);border:1px solid var(--sb-border);color:var(--sb-text);font-family:Be Vietnam Pro,sans-serif;font-size:.75rem;outline:none;transition:border-color .15s;"
+        onfocus="this.style.borderColor='var(--sb-gold)'" onblur="this.style.borderColor='var(--sb-border)'">
+    </div>
     <div id="sv-list"></div>
   </div>
   <div class="sb-bottom">
@@ -349,11 +354,25 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
         <div class="stat-c"><div class="stat-n" id="st-pend">0</div><div class="stat-l">Lịch chờ duyệt</div></div>
       </div>
       <div class="card">
-        <div class="card-hd">📊 Tiến độ nhiệm vụ hôm nay</div>
+        <div class="card-hd" style="flex-wrap:wrap;gap:.6rem;">
+          <span>📊 Tiến độ nhiệm vụ hôm nay</span>
+          <div style="display:flex;align-items:center;gap:.4rem;margin-left:auto;">
+            <input id="dash-search" type="text" placeholder="🔍 Tìm học viên..." oninput="filterDashProgress(this.value)"
+              style="padding:.28rem .6rem;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:Be Vietnam Pro,sans-serif;font-size:.73rem;outline:none;width:160px;transition:border-color .15s;"
+              onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">
+            <select id="dash-filter" onchange="filterDashProgress(document.getElementById('dash-search').value)"
+              style="padding:.28rem .5rem;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:Be Vietnam Pro,sans-serif;font-size:.73rem;outline:none;cursor:pointer;">
+              <option value="all">Tất cả</option>
+              <option value="done">✓ Đã nộp</option>
+              <option value="pending">⏳ Chưa nộp</option>
+              <option value="noHw">— Không có BT</option>
+            </select>
+          </div>
+        </div>
         <div id="dash-progress"></div>
       </div>
       <div class="card">
-        <div class="card-hd" style="color:var(--rust)">⚠️ Chưa hoàn thành hôm qua</div>
+        <div class="card-hd" style="color:var(--rust)">⚠️ Chưa hoàn thành hôm qua <span style="font-size:.6rem;font-weight:400;color:var(--muted);">(quá deadline, chưa nộp link)</span></div>
         <div id="dash-lagging"></div>
       </div>
     </div>
@@ -489,41 +508,84 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
 
   </div>
 
-    <!-- ATTENDANCE PAGE -->
-    <div class="pg" id="pg-attend">
-      <div class="attend-toolbar">
-        <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;">
-          <label style="font-size:.72rem;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Tháng</label>
-          <select id="attend-month-sel" class="attend-sel" onchange="renderAttendPage()"></select>
-          <select id="attend-year-sel" class="attend-sel" onchange="renderAttendPage()"></select>
+    <!-- ATTENDANCE PAGE — 2-column layout: left panel (selector) + right (calendar/table) -->
+    <div class="pg" id="pg-attend" style="margin-top:-1.8rem;padding-top:0;display:flex;flex-direction:column;gap:0;">
+
+      <!-- ── Top control bar ── -->
+      <div style="background:var(--s1);border-bottom:1px solid var(--border);padding:.7rem 1.1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.65rem;margin-bottom:1rem;">
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+          <!-- Month/year -->
+          <div style="display:flex;align-items:center;gap:.5rem;">
+            <span style="font-size:.7rem;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Tháng</span>
+            <select id="attend-month-sel" class="attend-sel" onchange="renderAttendPage()"></select>
+            <select id="attend-year-sel" class="attend-sel" onchange="renderAttendPage()"></select>
+          </div>
+          <!-- Mode toggle -->
+          <div style="display:flex;gap:0;border:1px solid var(--border);">
+            <button id="attend-mode-sv" class="btn bp" style="border-radius:0;font-size:.77rem;padding:.38rem .85rem;" onclick="setAttendMode('sv')">&#128100; Cá nhân</button>
+            <button id="attend-mode-cls" class="btn bg" style="border-radius:0;font-size:.77rem;padding:.38rem .85rem;" onclick="setAttendMode('cls')">&#128101; Theo lớp</button>
+          </div>
         </div>
         <div style="display:flex;align-items:center;gap:.5rem;">
           <button class="btn bg" style="font-size:.75rem;" onclick="openM('m-manual-attend-pick')">+ Điểm danh thủ công</button>
         </div>
       </div>
 
-      <!-- View mode: Individual / Class -->
-      <div style="display:flex;gap:0;margin-bottom:1rem;border:1px solid var(--border);width:fit-content;">
-        <button id="attend-mode-sv" class="btn bp" style="border-radius:0;font-size:.77rem;" onclick="setAttendMode('sv')">👤 Cá nhân</button>
-        <button id="attend-mode-cls" class="btn bg" style="border-radius:0;font-size:.77rem;" onclick="setAttendMode('cls')">👥 Theo lớp</button>
-      </div>
+      <!-- ── 2-column body ── -->
+      <div style="display:grid;grid-template-columns:220px 1fr;gap:1rem;align-items:start;">
 
-      <!-- Individual mode -->
-      <div id="attend-sv-mode">
-        <div id="attend-sv-tabs" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem;"></div>
-        <div id="attend-summary" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;"></div>
-        <div class="card" style="padding:0;overflow:hidden;">
-          <div id="attend-grid-content" style="padding:1.3rem;"></div>
-        </div>
-      </div>
+        <!-- LEFT: Selector panel (student tabs OR class tabs + filter) -->
+        <div style="background:var(--s1);border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);">
 
-      <!-- Class mode -->
-      <div id="attend-cls-mode" style="display:none;">
-        <div id="attend-cls-tabs" style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem;"></div>
-        <div id="attend-cls-summary" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;"></div>
-        <div class="card" style="padding:0;overflow:hidden;">
-          <div id="attend-cls-content" style="padding:1.3rem;"></div>
+          <!-- Filter/search — only shown in sv mode -->
+          <div id="att-filter-panel" style="border-bottom:1px solid var(--border);padding:.7rem .85rem;">
+            <input id="att-search" type="text" placeholder="&#128269; Tìm tên / mã..." oninput="applyAttendFilter()"
+              style="width:100%;padding:.36rem .6rem;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:'Be Vietnam Pro',sans-serif;font-size:.78rem;outline:none;transition:border-color .15s;box-sizing:border-box;"
+              onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">
+            <div style="display:flex;gap:.4rem;margin-top:.45rem;">
+              <select id="att-rate-filter" onchange="applyAttendFilter()" class="attend-sel" style="flex:1;font-size:.72rem;">
+                <option value="all">Tất cả</option>
+                <option value="good">&#8805;80% Tốt</option>
+                <option value="avg">60–79% TB</option>
+                <option value="bad">&lt;60% Yếu</option>
+                <option value="none">Chưa có DL</option>
+              </select>
+              <select id="att-sort" onchange="applyAttendFilter()" class="attend-sel" style="flex:1;font-size:.72rem;">
+                <option value="name">A→Z</option>
+                <option value="rate-desc">CC cao</option>
+                <option value="rate-asc">CC thấp</option>
+              </select>
+            </div>
+            <div id="att-filter-result" style="margin-top:.38rem;font-size:.68rem;color:var(--muted);"></div>
+          </div>
+
+          <!-- Student list (sv mode) -->
+          <div id="attend-sv-tabs" style="max-height:520px;overflow-y:auto;"></div>
+
+          <!-- Class list (cls mode) -->
+          <div id="attend-cls-tabs" style="display:none;"></div>
+
+          <!-- Stats pills at bottom of panel -->
+          <div id="attend-summary" style="padding:.6rem .85rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;"></div>
+          <div id="attend-cls-summary" style="padding:.6rem .85rem;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:.3rem;display:none;"></div>
         </div>
+
+        <!-- RIGHT: Calendar / table -->
+        <div>
+          <!-- sv mode -->
+          <div id="attend-sv-mode">
+            <div class="card" style="padding:0;overflow:hidden;">
+              <div id="attend-grid-content" style="padding:1.3rem;"></div>
+            </div>
+          </div>
+          <!-- cls mode -->
+          <div id="attend-cls-mode" style="display:none;">
+            <div class="card" style="padding:0;overflow:hidden;">
+              <div id="attend-cls-content" style="padding:1.3rem;"></div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -888,11 +950,19 @@ db.ref('daylinks').on('value', function(snap){
 
 /* ═══ SIDEBAR ═══ */
 function renderSB(){
+  var q=(document.getElementById('sb-search')||{}).value||'';
+  filterSvList(q);
+}
+function filterSvList(q){
   var el=document.getElementById('sv-list');
   var students=Object.values(allStudents);
-  if(!students.length){ el.innerHTML='<div style="font-size:.73rem;color:var(--muted);padding:.4rem 1.1rem">Chưa có học viên</div>'; return; }
+  var qL=(q||'').toLowerCase().trim();
+  var filtered=qL?students.filter(function(s){ return s.name.toLowerCase().includes(qL)||s.id.toLowerCase().includes(qL); }):students;
+  if(!filtered.length){
+    el.innerHTML='<div style="font-size:.73rem;color:var(--muted);padding:.4rem 1.1rem">'+(qL?'Không tìm thấy':'Chưa có học viên')+'</div>'; return;
+  }
   el.innerHTML='';
-  students.forEach(function(s){
+  filtered.forEach(function(s){
     var item=document.createElement('div');
     item.className='sv-item'+(s.id===CID?' on':'');
     item.innerHTML='<div class="sv-av">'+s.name.charAt(0)+'</div><div><div class="sv-name">'+s.name+'</div><div class="sv-id">'+s.id+'</div></div>';
@@ -981,18 +1051,83 @@ function renderDash(){
   var tkEl=document.getElementById('st-tasks'); if(tkEl) tkEl.textContent=fullyDone+'/'+students.length;
   var pdEl=document.getElementById('st-pend'); if(pdEl) pdEl.textContent=pend;
 
-  var dpEl=document.getElementById('dash-progress');
-  if(!dpEl) return;
-  dpEl.innerHTML='';
-  if(!students.length){ dpEl.innerHTML='<div class="empty">Chưa có học viên</div>'; }
-  else students.forEach(function(s){
+  // Build all dash rows data for filtering/pagination
+  var allDashRows=[];
+  students.forEach(function(s){
     var hw=(s.homework||[]).find(function(h){ return h.date===td; });
     var total=hw?countHwItemsT(hw):0;
     var linked=hw?(allDayLinks[s.id]&&allDayLinks[s.id][hw.id]):null;
     var isFull=!!(linked);
-    var pct=isFull?100:0;
+    var status=isFull?'done':(total?'pending':'noHw');
     var goal=allGoals[s.id];
     var latestScore=(s.scores&&s.scores.length)?s.scores[s.scores.length-1].score:null;
+    allDashRows.push({s:s,hw:hw,total:total,isFull:isFull,status:status,goal:goal,latestScore:latestScore});
+  });
+  window._dashRows=allDashRows;
+  window._dashTd=td;
+  _dashPage=0;
+  renderDashProgressFiltered();
+
+  var lagEl=document.getElementById('dash-lagging');
+  if(!lagEl) return;
+  lagEl.innerHTML='';
+  var lagging=[];
+  students.forEach(function(s){
+    // Only flag homework whose DEADLINE (endDate) was yesterday and student hasn't submitted link
+    var overdueHw=(s.homework||[]).filter(function(h){
+      var deadline=h.endDate||h.date;
+      return deadline===yesterday;
+    });
+    overdueHw.forEach(function(hw){
+      var total=countHwItemsT(hw); if(!total) return;
+      var linked=allDayLinks[s.id]&&allDayLinks[s.id][hw.id];
+      if(!linked) lagging.push({s:s,hw:hw,total:total,pct:0});
+    });
+  });
+  if(!lagging.length){ lagEl.innerHTML='<div class="empty">🎉 Tất cả học viên đã hoàn thành nhiệm vụ hôm qua!</div>'; }
+  else lagging.forEach(function(item){
+    var hwLabel=item.hw.label||(isoToDMY(item.hw.date)+(item.hw.endDate&&item.hw.endDate!==item.hw.date?' → '+isoToDMY(item.hw.endDate):''));
+    var row=document.createElement('div'); row.className='prog-row prog-lag';
+    row.style.cursor='pointer';
+    row.onclick=(function(sid){ return function(){ selSv(sid); }; })(item.s.id);
+    row.innerHTML='<div class="prog-sv-name">'+item.s.name+' <span style="opacity:.5;font-size:.68rem">'+item.s.id+'</span></div>'+
+      '<div class="prog-bar-wrap"><div class="prog-bar"><div class="prog-fill" style="width:0%;background:var(--rust)"></div></div></div>'+
+      '<div class="prog-pct" style="color:var(--rust)">0%</div>'+
+      '<div class="prog-date">Deadline: '+yesterday+' · '+item.total+' mục · Chưa nộp link</div>';
+    lagEl.appendChild(row);
+  });
+}
+function countHwItemsT(hw){
+  var secs=['vocab','reading','listening','other','practice']; var n=0;
+  secs.forEach(function(s){ n+=(hw[s]||[]).length; }); return n;
+}
+var _dashPage=0;
+var DASH_PAGE_SIZE=10;
+function filterDashProgress(q){
+  _dashPage=0;
+  renderDashProgressFiltered(q);
+}
+function renderDashProgressFiltered(q){
+  var dpEl=document.getElementById('dash-progress'); if(!dpEl) return;
+  dpEl.innerHTML='';
+  var rows=window._dashRows||[];
+  if(!rows.length){ dpEl.innerHTML='<div class="empty">Chưa có học viên</div>'; return; }
+  var filterVal=(document.getElementById('dash-filter')||{}).value||'all';
+  var searchQ=(q!==undefined?q:((document.getElementById('dash-search')||{}).value||'')).toLowerCase().trim();
+  var filtered=rows.filter(function(r){
+    var nameMatch=!searchQ||(r.s.name.toLowerCase().includes(searchQ)||r.s.id.toLowerCase().includes(searchQ));
+    var statusMatch=filterVal==='all'||(r.status===filterVal);
+    return nameMatch&&statusMatch;
+  });
+  var total=filtered.length;
+  var pages=Math.ceil(total/DASH_PAGE_SIZE)||1;
+  if(_dashPage>=pages) _dashPage=pages-1;
+  var start=_dashPage*DASH_PAGE_SIZE;
+  var pageRows=filtered.slice(start,start+DASH_PAGE_SIZE);
+  if(!pageRows.length){ dpEl.innerHTML='<div class="empty">Không có học viên nào khớp.</div>'; return; }
+  pageRows.forEach(function(r){
+    var s=r.s; var isFull=r.isFull; var total_items=r.total;
+    var goal=r.goal; var latestScore=r.latestScore;
     var goalHtml='';
     if(goal&&goal.target){
       var gap=latestScore!==null?goal.target-latestScore:null;
@@ -1007,41 +1142,34 @@ function renderDash(){
         +'</div>';
     }
     var statusHtml=isFull
-      ?'<span style="font-size:.68rem;color:var(--sage);font-weight:600">✓ Đã nộp link</span>'
-      :(total?'<span style="font-size:.68rem;color:var(--muted)">Chưa nộp</span>':'<span style="font-size:.68rem;color:var(--muted)">Không có BTVN</span>');
+      ?'<span style="font-size:.68rem;color:var(--sage);font-weight:600">\u2713 Đã nộp link</span>'
+      :(total_items?'<span style="font-size:.68rem;color:var(--muted)">Chưa nộp</span>':'<span style="font-size:.68rem;color:var(--muted)">Không có BTVN</span>');
     var row=document.createElement('div'); row.className='prog-row'; row.style.flexWrap='wrap'; row.style.gap='.4rem';
+    row.style.cursor='pointer'; row.onclick=(function(sid){ return function(){ selSv(sid); }; })(s.id);
     row.innerHTML='<div class="prog-sv-name">'+s.name+' <span style="opacity:.4;font-size:.68rem">'+s.id+'</span></div>'+
-      '<div class="prog-bar-wrap"><div class="prog-bar"><div class="prog-fill'+(isFull?' full':'')+'" style="width:'+pct+'%"></div></div></div>'+
-      '<div class="prog-pct'+(isFull?' full':'')+'">'+( isFull?'✓ 100%':'—')+'</div>'+
+      '<div class="prog-bar-wrap"><div class="prog-bar"><div class="prog-fill'+(isFull?' full':'')+'" style="width:'+(isFull?100:0)+'%"></div></div></div>'+
+      '<div class="prog-pct'+(isFull?' full':'')+'">'+( isFull?'\u2713 100%':'\u2014')+'</div>'+
       statusHtml+goalHtml;
     dpEl.appendChild(row);
   });
-
-  var lagEl=document.getElementById('dash-lagging');
-  if(!lagEl) return;
-  lagEl.innerHTML='';
-  var lagging=[];
-  students.forEach(function(s){
-    var hw=(s.homework||[]).find(function(h){ return h.date===yesterday; });
-    if(!hw) return;
-    var total=countHwItemsT(hw); if(!total) return;
-    var p=allProgress[s.id]&&allProgress[s.id][yesterday];
-    var done=p?Math.min(p.done,total):0;
-    if(done<total) lagging.push({s:s,done:done,total:total,pct:Math.round(done/total*100)});
-  });
-  if(!lagging.length){ lagEl.innerHTML='<div class="empty">🎉 Tất cả học viên đã hoàn thành nhiệm vụ hôm qua!</div>'; }
-  else lagging.forEach(function(item){
-    var row=document.createElement('div'); row.className='prog-row prog-lag';
-    row.innerHTML='<div class="prog-sv-name">'+item.s.name+' <span style="opacity:.5;font-size:.68rem">'+item.s.id+'</span></div>'+
-      '<div class="prog-bar-wrap"><div class="prog-bar"><div class="prog-fill" style="width:'+item.pct+'%;background:var(--rust)"></div></div></div>'+
-      '<div class="prog-pct" style="color:var(--rust)">'+item.pct+'%</div>'+
-      '<div class="prog-date">'+item.done+'/'+item.total+' mục · '+yesterday+'</div>';
-    lagEl.appendChild(row);
-  });
-}
-function countHwItemsT(hw){
-  var secs=['vocab','reading','listening','other','practice']; var n=0;
-  secs.forEach(function(s){ n+=(hw[s]||[]).length; }); return n;
+  // Pagination controls
+  if(pages>1){
+    var pg=document.createElement('div');
+    pg.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:.6rem .8rem .2rem;font-size:.73rem;color:var(--muted);border-top:1px solid var(--line);margin-top:.4rem;';
+    var info=document.createElement('span'); info.textContent='Hiển thị '+(start+1)+'\u2013'+Math.min(start+DASH_PAGE_SIZE,total)+' / '+total+' học viên';
+    var btns=document.createElement('div'); btns.style.cssText='display:flex;gap:.3rem;';
+    if(_dashPage>0){
+      var bp=document.createElement('button'); bp.textContent='\u2190 Trước';
+      bp.style.cssText='padding:.28rem .7rem;font-size:.72rem;border:1px solid var(--border);background:var(--s2);color:var(--text);cursor:pointer;font-family:Be Vietnam Pro,sans-serif;';
+      bp.onclick=function(){ _dashPage--; renderDashProgressFiltered(); }; btns.appendChild(bp);
+    }
+    if(_dashPage<pages-1){
+      var bn=document.createElement('button'); bn.textContent='Sau \u2192';
+      bn.style.cssText='padding:.28rem .7rem;font-size:.72rem;border:1px solid var(--border);background:var(--s2);color:var(--text);cursor:pointer;font-family:Be Vietnam Pro,sans-serif;';
+      bn.onclick=function(){ _dashPage++; renderDashProgressFiltered(); }; btns.appendChild(bn);
+    }
+    pg.appendChild(info); pg.appendChild(btns); dpEl.appendChild(pg);
+  }
 }
 function renderSvProgress(s){
   var el=document.getElementById('sv-progress-list'); if(!el) return;
@@ -1935,7 +2063,28 @@ function setAttendMode(mode){
   document.getElementById('attend-cls-mode').style.display=mode==='cls'?'block':'none';
   document.getElementById('attend-mode-sv').className='btn '+(mode==='sv'?'bp':'bg');
   document.getElementById('attend-mode-cls').className='btn '+(mode==='cls'?'bp':'bg');
+  // Toggle left-panel sections
+  var svTabs=document.getElementById('attend-sv-tabs');
+  var clsTabs=document.getElementById('attend-cls-tabs');
+  var svSum=document.getElementById('attend-summary');
+  var clsSum=document.getElementById('attend-cls-summary');
+  var filtPanel=document.getElementById('att-filter-panel');
+  if(svTabs) svTabs.style.display=mode==='sv'?'block':'none';
+  if(clsTabs) clsTabs.style.display=mode==='cls'?'block':'none';
+  if(svSum) svSum.style.display=mode==='sv'?'flex':'none';
+  if(clsSum) clsSum.style.display=mode==='cls'?'flex':'none';
+  if(filtPanel) filtPanel.style.display=mode==='sv'?'block':'none';
   renderAttendPage();
+}
+function resetAttendFilter(){
+  var s=document.getElementById('att-search'); if(s) s.value='';
+  var r=document.getElementById('att-rate-filter'); if(r) r.value='all';
+  var so=document.getElementById('att-sort'); if(so) so.value='name';
+  var rc=document.getElementById('att-filter-result'); if(rc) rc.textContent='';
+  renderAttendPage();
+}
+function applyAttendFilter(){
+  if(attendMode==='sv') renderAttendSv();
 }
 
 function initAttendSelectors(){
@@ -1976,12 +2125,52 @@ function renderAttendSv(){
   var tabsEl=document.getElementById('attend-sv-tabs'); tabsEl.innerHTML='';
   var svIds=Object.keys(allStudents).sort(function(a,b){return allStudents[a].name.localeCompare(allStudents[b].name);});
   if(!svIds.length){ tabsEl.innerHTML='<div style="font-size:.78rem;color:var(--muted)">Chưa có học viên</div>'; return; }
-  if(!attendSvId||!allStudents[attendSvId]) attendSvId=svIds[0];
-  svIds.forEach(function(sid){
-    var btn=document.createElement('button'); btn.className='attend-sv-tab'+(sid===attendSvId?' active':'');
-    btn.textContent=allStudents[sid].name;
-    btn.onclick=function(){ attendSvId=sid; renderAttendSv(); };
-    tabsEl.appendChild(btn);
+  if(!attendSvId||!allStudents[attendSvId]) attendSvId=svIds.length?svIds[0]:null;
+  // Apply filter + sort from advanced panel
+  var attSearch=((document.getElementById('att-search')||{}).value||'').toLowerCase().trim();
+  var attRate=(document.getElementById('att-rate-filter')||{}).value||'all';
+  var attSort=(document.getElementById('att-sort')||{}).value||'name';
+  var svData=svIds.map(function(sid){
+    var sv=allStudents[sid]; var svAtt=allAttendance[sid]||{};
+    var schDates={};
+    (sv.schedule||[]).forEach(function(sc){ var p=sc.date.split('-'); if(parseInt(p[0])===year&&parseInt(p[1])===month) schDates[sc.date]=1; });
+    var pCount=0,totalPast=0;
+    Object.keys(schDates).forEach(function(d){
+      if(d<=td){ totalPast++; var rec=svAtt[d]; if(rec&&rec.status==='present') pCount++; }
+    });
+    var rate=totalPast?Math.round(pCount/totalPast*100):null;
+    return {sid:sid,name:sv.name,rate:rate};
+  });
+  svData=svData.filter(function(d){
+    if(attSearch&&!d.name.toLowerCase().includes(attSearch)&&!d.sid.toLowerCase().includes(attSearch)) return false;
+    if(attRate==='good'&&(d.rate===null||d.rate<80)) return false;
+    if(attRate==='avg'&&(d.rate===null||d.rate<60||d.rate>=80)) return false;
+    if(attRate==='bad'&&(d.rate===null||d.rate>=60)) return false;
+    if(attRate==='none'&&d.rate!==null) return false;
+    return true;
+  });
+  svData.sort(function(a,b){
+    if(attSort==='name') return a.name.localeCompare(b.name);
+    if(attSort==='rate-desc') return (b.rate===null?-1:b.rate)-(a.rate===null?-1:a.rate);
+    if(attSort==='rate-asc') return (a.rate===null?999:a.rate)-(b.rate===null?999:b.rate);
+    return 0;
+  });
+  var rcEl=document.getElementById('att-filter-result');
+  if(rcEl) rcEl.textContent=svData.length+' học viên'+(svData.length!==svIds.length?' (đã lọc từ '+svIds.length+')':'')+' trong tháng này';
+  if(!svData.find(function(d){return d.sid===attendSvId;})) attendSvId=svData.length?svData[0].sid:null;
+  if(!attendSvId){ tabsEl.innerHTML='<div style="font-size:.78rem;color:var(--muted)">Không có học viên nào khớp bộ lọc</div>'; return; }
+  svData.forEach(function(d){
+    var item=document.createElement('div');
+    var isActive=d.sid===attendSvId;
+    item.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:.5rem .85rem;cursor:pointer;border-bottom:1px solid var(--line);transition:background .12s;'+(isActive?'background:var(--glow);border-left:3px solid var(--gold);':'border-left:3px solid transparent;');
+    var rateColor=d.rate===null?'var(--muted)':d.rate>=80?'var(--sage)':d.rate>=60?'var(--gold)':'var(--rust)';
+    var rateStr=d.rate!==null?d.rate+'%':'—';
+    item.innerHTML='<span style="font-size:.8rem;font-weight:'+(isActive?'600':'400')+';color:'+(isActive?'var(--gold)':'var(--text)')+';">'+escHtml(d.name)+'</span>'+
+      '<span style="font-size:.7rem;font-weight:700;color:'+rateColor+';">'+rateStr+'</span>';
+    item.onmouseover=function(){ if(d.sid!==attendSvId) this.style.background='rgba(255,255,255,.04)'; };
+    item.onmouseout=function(){ if(d.sid!==attendSvId) this.style.background=''; };
+    item.onclick=function(){ attendSvId=d.sid; renderAttendSv(); };
+    tabsEl.appendChild(item);
   });
   var s=allStudents[attendSvId];
   var svAttend=allAttendance[attendSvId]||{};
@@ -2007,11 +2196,16 @@ function renderAttendSv(){
   });
   var unmarked=Object.keys(scheduledDates).filter(function(d){return d<=td&&!svAttend[d];}).length;
   var rate=schTotal?Math.round(present/schTotal*100):null;
-  var sumEl=document.getElementById('attend-summary'); sumEl.innerHTML=
-    '<div class="attend-stat-pill pill-present">✓ Có mặt: '+present+'</div>'+
-    '<div class="attend-stat-pill pill-absent">✗ Vắng: '+absent+'</div>'+
-    (unmarked?'<div class="attend-stat-pill" style="background:rgba(176,125,26,.08);color:var(--gold);border:1px solid rgba(176,125,26,.2);">⏳ Chưa điểm: '+unmarked+'</div>':'')+
-    (rate!==null?'<div class="attend-stat-pill pill-rate">📊 Chuyên cần: '+rate+'%</div>':'');
+  var sumEl=document.getElementById('attend-summary'); sumEl.style.display='flex';
+  sumEl.innerHTML=
+    '<div class="attend-stat-pill pill-present" style="justify-content:space-between;width:100%;">'+
+      '<span>✓ Có mặt</span><strong>'+present+'</strong></div>'+
+    '<div class="attend-stat-pill pill-absent" style="justify-content:space-between;width:100%;">'+
+      '<span>✗ Vắng</span><strong>'+absent+'</strong></div>'+
+    (unmarked?'<div class="attend-stat-pill" style="background:rgba(176,125,26,.08);color:var(--gold);border:1px solid rgba(176,125,26,.2);justify-content:space-between;width:100%;">'+
+      '<span>⏳ Chưa điểm</span><strong>'+unmarked+'</strong></div>':'')+
+    (rate!==null?'<div class="attend-stat-pill pill-rate" style="justify-content:space-between;width:100%;">'+
+      '<span>📊 Chuyên cần</span><strong>'+rate+'%</strong></div>':'');
   renderCalendar(document.getElementById('attend-grid-content'),year,month,td,scheduledDates,svAttend,attendSvId,s.name);
 }
 
@@ -2023,11 +2217,19 @@ function renderAttendCls(){
   var clsIds=Object.keys(allClasses||{});
   if(!clsIds.length){ clsTabsEl.innerHTML='<div style="font-size:.78rem;color:var(--muted)">Chưa có lớp nào</div>'; return; }
   if(!attendClsId||!allClasses[attendClsId]) attendClsId=clsIds[0];
+  clsTabsEl.style.display='block';
   clsIds.forEach(function(cid){
-    var btn=document.createElement('button'); btn.className='attend-sv-tab'+(cid===attendClsId?' active':'');
-    btn.textContent=allClasses[cid].name;
-    btn.onclick=function(){ attendClsId=cid; renderAttendCls(); };
-    clsTabsEl.appendChild(btn);
+    var cls=allClasses[cid];
+    var isActive=cid===attendClsId;
+    var item=document.createElement('div');
+    item.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:.5rem .85rem;cursor:pointer;border-bottom:1px solid var(--line);transition:background .12s;'+(isActive?'background:var(--glow);border-left:3px solid var(--gold);':'border-left:3px solid transparent;');
+    var mCount=(cls.members||[]).length;
+    item.innerHTML='<span style="font-size:.8rem;font-weight:'+(isActive?'600':'400')+';color:'+(isActive?'var(--gold)':'var(--text)')+';">'+escHtml(cls.name)+'</span>'+
+      '<span style="font-size:.68rem;color:var(--muted);">'+mCount+' HV</span>';
+    item.onmouseover=function(){ if(cid!==attendClsId) this.style.background='rgba(255,255,255,.04)'; };
+    item.onmouseout=function(){ if(cid!==attendClsId) this.style.background=''; };
+    item.onclick=function(){ attendClsId=cid; renderAttendCls(); };
+    clsTabsEl.appendChild(item);
   });
   var cls=allClasses[attendClsId];
   var members=(cls.members||[]).map(function(sid){return allStudents[sid];}).filter(Boolean);
