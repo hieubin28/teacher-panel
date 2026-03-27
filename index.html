@@ -59,6 +59,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
 .bd{background:none;border:1px solid var(--rust)!important;color:var(--rust);}
 
 .cnt-area{flex:1;padding:1.8rem;overflow-y:auto;background:var(--bg);}
+.cnt-area.attend-mode{padding:0;}
 
 /* ─── PAGES ─── */
 .pg{display:none;}.pg.on{display:block;}
@@ -509,10 +510,10 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
   </div>
 
     <!-- ATTENDANCE PAGE — 2-column layout: left panel (selector) + right (calendar/table) -->
-    <div class="pg" id="pg-attend" style="margin-top:-1.8rem;padding-top:0;display:flex;flex-direction:column;gap:0;">
+    <div class="pg" id="pg-attend" style="display:flex;flex-direction:column;gap:0;">
 
       <!-- ── Top control bar ── -->
-      <div style="background:var(--s1);border-bottom:1px solid var(--border);padding:.7rem 1.1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.65rem;margin-bottom:1rem;">
+      <div style="background:var(--s1);border-bottom:1px solid var(--border);padding:.7rem 1.8rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.65rem;margin-bottom:1rem;">
         <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
           <!-- Month/year -->
           <div style="display:flex;align-items:center;gap:.5rem;">
@@ -532,7 +533,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--te
       </div>
 
       <!-- ── 2-column body ── -->
-      <div style="display:grid;grid-template-columns:220px 1fr;gap:1rem;align-items:start;">
+      <div style="display:grid;grid-template-columns:220px 1fr;gap:1rem;align-items:start;padding:0 1.8rem 1.8rem;">
 
         <!-- LEFT: Selector panel (student tabs OR class tabs + filter) -->
         <div style="background:var(--s1);border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);">
@@ -977,6 +978,11 @@ function showPg(name, el){
   document.querySelectorAll('.nv').forEach(function(n){ n.classList.remove('on'); });
   document.getElementById('pg-'+name).classList.add('on');
   if(el) el.classList.add('on');
+  // Scroll content area to top on every page change
+  var ca=document.querySelector('.cnt-area');
+  if(ca){ ca.scrollTop=0; }
+  // Toggle zero-padding mode for attend page (has its own internal padding)
+  if(ca){ ca.classList.toggle('attend-mode', name==='attend'); }
   var titles={dash:'Tổng quan',scores:'Duyệt điểm học viên',books:'Lịch book 1-1',slots:'Khung giờ trống',classes:'🏫 Lớp học',attend:'📋 Điểm danh'};
   document.getElementById('tb-title').textContent=titles[name]||'';
   document.getElementById('tb-sub').textContent='';
