@@ -1255,7 +1255,19 @@ function renderDash(){
     overdueHw.forEach(function(hw){
       var total=countHwItemsT(hw); if(!total) return;
       var linked=allDayLinks[s.id]&&allDayLinks[s.id][hw.id];
-      if(!linked) lagging.push({s:s,hw:hw,total:total,pct:0});
+      if(!linked){
+        // Tính số mục đã tick/nộp từ allSubs
+        var svSubs=allSubs[s.id]||{};
+        var done=0;
+        HW_SECTIONS.forEach(function(sec){
+          (hw[sec]||[]).forEach(function(_,i){
+            var sub=svSubs[hw.id+'_'+sec+'_'+i];
+            if(sub&&(sub.link||sub.ticked)) done++;
+          });
+        });
+        var pct=total?Math.round(done/total*100):0;
+        lagging.push({s:s,hw:hw,total:total,done:done,pct:pct});
+      }
     });
   });
   if(!lagging.length){ lagEl.innerHTML='<div class="empty">🎉 Tất cả học viên đã hoàn thành nhiệm vụ hôm qua!</div>'; }
@@ -1264,10 +1276,12 @@ function renderDash(){
     var row=document.createElement('div'); row.className='prog-row prog-lag';
     row.style.cursor='pointer';
     row.onclick=(function(sid){ return function(){ selSv(sid); }; })(item.s.id);
+    var pct=item.pct; var done=item.done||0;
+    var barColor=pct>0?'var(--gold)':'var(--rust)';
     row.innerHTML='<div class="prog-sv-name">'+item.s.name+' <span style="opacity:.5;font-size:.68rem">'+item.s.id+'</span></div>'+
-      '<div class="prog-bar-wrap"><div class="prog-bar"><div class="prog-fill" style="width:0%;background:var(--rust)"></div></div></div>'+
-      '<div class="prog-pct" style="color:var(--rust)">0%</div>'+
-      '<div class="prog-date">Deadline: '+yesterday+' · '+item.total+' mục · Chưa nộp link</div>';
+      '<div class="prog-bar-wrap"><div class="prog-bar"><div class="prog-fill" style="width:'+pct+'%;background:'+barColor+'"></div></div></div>'+
+      '<div class="prog-pct" style="color:'+barColor+'">'+pct+'%</div>'+
+      '<div class="prog-date">Deadline: '+yesterday+' · '+done+'/'+item.total+' mục · Chưa nộp link</div>';
     lagEl.appendChild(row);
   });
 }
