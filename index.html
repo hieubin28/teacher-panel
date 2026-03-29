@@ -1791,9 +1791,9 @@ function renderHw(hw){
   document.getElementById('hw-badge-active').textContent=counts.active;
   document.getElementById('hw-badge-done').textContent=counts.done;
   document.getElementById('hw-badge-expired').textContent=counts.expired;
-  // Show filter bar only if >1 entry
+  // Show filter bar whenever there is at least 1 entry
   var filterBar=document.getElementById('hw-filter-bar');
-  filterBar.style.display=classified.length>1?'flex':'none';
+  filterBar.style.display='flex';
   // Filter — dùng tags thay vì status
   var filtered=hwFilter==='all'?classified:classified.filter(function(c){return c.tags[hwFilter];});
   if(!filtered.length){
