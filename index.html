@@ -32,16 +32,7 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
 .nv:hover{color:var(--sb-text);background:rgba(255,255,255,.04);}
 .nv.on{color:var(--sb-gold);background:var(--sb-glow);border-right-color:var(--sb-gold);}
 .nv .cnt{background:var(--rust);color:#fff;border-radius:8px;font-size:.6rem;padding:.05rem .35rem;font-weight:700;margin-left:.3rem;}
-.sb-students{flex:1;overflow-y:auto;padding:.6rem 0;}
-.sb-lbl{font-size:.62rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--sb-muted);padding:0 1.1rem;margin-bottom:.35rem;}
-.sv-item{display:flex;align-items:center;gap:.55rem;padding:.42rem 1.1rem;cursor:pointer;transition:background .15s;font-size:.8rem;color:var(--sb-text);}
-.sv-item:hover{background:rgba(255,255,255,.05);}
-.sv-item.on{background:var(--sb-glow);color:var(--sb-gold);}
-.sv-av{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:var(--sb-gold);flex-shrink:0;}
-.sv-item.on .sv-av{background:var(--sb-gold);color:var(--sb-bg);}
-.sv-name{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:130px;}
-.sv-id{font-size:.62rem;opacity:.45;font-family:\"JetBrains Mono\",monospace;}
-.sb-bottom{padding:.9rem 1.1rem;border-top:1px solid var(--sb-border);}
+.sb-bottom{padding:.9rem 1.1rem;border-top:1px solid var(--sb-border);margin-top:auto;}
 .btn-add{width:100%;padding:.5rem;border:1px dashed var(--sb-border);background:none;color:var(--sb-muted);font-family:\"Be Vietnam Pro\",sans-serif;font-size:.77rem;cursor:pointer;transition:all .15s;}
 .btn-add:hover{border-color:var(--sb-gold);color:var(--sb-gold);}
 
@@ -125,6 +116,24 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
 .prog-date{font-size:.65rem;color:var(--muted);font-family:\"JetBrains Mono\",monospace;}
 .prog-lag{background:rgba(192,52,26,.05);border-left:3px solid var(--rust)!important;}
 .prog-lag .prog-sv-name{color:var(--rust);}
+
+/* ─── STUDENT CARD GRID ─── */
+.sv-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.75rem;}
+.sv-card{background:var(--s1);border:1px solid var(--border);padding:.9rem 1rem;cursor:pointer;transition:all .18s;position:relative;}
+.sv-card:hover{border-color:var(--gold);box-shadow:0 2px 8px rgba(176,125,26,.12);transform:translateY(-1px);}
+.sv-card-name{font-size:.88rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sv-card-id{font-size:.62rem;color:var(--muted);font-family:"JetBrains Mono",monospace;margin-top:.08rem;}
+.sv-card-score-row{display:flex;align-items:baseline;gap:.4rem;margin-top:.7rem;}
+.sv-card-score-val{font-family:'Lora',serif;font-size:1.35rem;font-weight:700;color:var(--gold);line-height:1;}
+.sv-card-score-target{font-size:.7rem;color:var(--muted);}
+.sv-card-bar-wrap{margin-top:.45rem;height:4px;background:var(--line);}
+.sv-card-bar-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--gold));transition:width .5s;}
+.sv-card-bar-fill.reached{background:var(--sage);}
+.sv-card-meta{display:flex;align-items:center;justify-content:space-between;margin-top:.55rem;}
+.sv-card-hw{font-size:.67rem;color:var(--muted);}
+.sv-card-hw.done{color:var(--sage);font-weight:600;}
+.sv-card-hw.pending{color:var(--gold);}
+.sv-card-dl{font-size:.62rem;color:var(--muted);font-family:"JetBrains Mono",monospace;}
 
 /* ─── LINK BOX ─── */
 .link-box{display:flex;align-items:center;gap:.6rem;background:var(--s3);border:1px solid var(--border);padding:.65rem .85rem;margin-bottom:.8rem;}
@@ -392,15 +401,6 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
     <div class="nv"    id="nv-books"   onclick="showPg('books',this)">📅 Lịch book 1-1</div>
     <div class="nv"    id="nv-slots"   onclick="showPg('slots',this)">⏰ Khung giờ</div>
   </div>
-  <div class="sb-students">
-    <div class="sb-lbl">Học viên</div>
-    <div style="padding:0 .7rem .5rem;">
-      <input id="sb-search" type="text" placeholder="🔍 Tìm học viên..." oninput="filterSvList(this.value)"
-        style="width:100%;padding:.38rem .6rem;background:rgba(255,255,255,.06);border:1px solid var(--sb-border);color:var(--sb-text);font-family:Be Vietnam Pro,sans-serif;font-size:.75rem;outline:none;transition:border-color .15s;"
-        onfocus="this.style.borderColor='var(--sb-gold)'" onblur="this.style.borderColor='var(--sb-border)'">
-    </div>
-    <div id="sv-list"></div>
-  </div>
   <div class="sb-bottom">
     <button class="btn-add" onclick="openM('m-add-sv')">+ Thêm học viên</button>
   </div>
@@ -427,7 +427,7 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
       </div>
       <div class="card">
         <div class="card-hd" style="flex-wrap:wrap;gap:.6rem;">
-          <span>📊 Tiến độ nhiệm vụ hôm nay</span>
+          <span>👥 Học viên — Điểm TOEIC</span>
           <div style="display:flex;align-items:center;gap:.4rem;margin-left:auto;">
             <input id="dash-search" type="text" placeholder="🔍 Tìm học viên..." oninput="filterDashProgress(this.value)"
               style="padding:.28rem .6rem;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:Be Vietnam Pro,sans-serif;font-size:.73rem;outline:none;width:160px;transition:border-color .15s;"
@@ -435,13 +435,13 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
             <select id="dash-filter" onchange="filterDashProgress(document.getElementById('dash-search').value)"
               style="padding:.28rem .5rem;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:Be Vietnam Pro,sans-serif;font-size:.73rem;outline:none;cursor:pointer;">
               <option value="all">Tất cả</option>
-              <option value="done">✓ Đã nộp</option>
-              <option value="pending">⏳ Chưa nộp</option>
+              <option value="done">✓ Đã nộp BT</option>
+              <option value="pending">⏳ Chưa nộp BT</option>
               <option value="noHw">— Không có BT</option>
             </select>
           </div>
         </div>
-        <div id="dash-progress"></div>
+        <div class="sv-card-grid" id="dash-progress"></div>
       </div>
       <div class="card">
         <div class="card-hd" style="color:var(--rust)">⚠️ Chưa hoàn thành hôm qua <span style="font-size:.6rem;font-weight:400;color:var(--muted);">(quá deadline, chưa nộp link)</span></div>
@@ -1113,11 +1113,11 @@ db.ref('daylinks').on('value', function(snap){
 
 /* ═══ SIDEBAR ═══ */
 function renderSB(){
-  var q=(document.getElementById('sb-search')||{}).value||'';
-  filterSvList(q);
+  // sv-list removed from sidebar — nothing to render
 }
 function filterSvList(q){
   var el=document.getElementById('sv-list');
+  if(!el) return;
   var students=Object.values(allStudents);
   var qL=(q||'').toLowerCase().trim();
   var filtered=qL?students.filter(function(s){ return s.name.toLowerCase().includes(qL)||s.id.toLowerCase().includes(qL); }):students;
@@ -1241,7 +1241,6 @@ function renderDash(){
   });
   window._dashRows=allDashRows;
   window._dashTd=td;
-  _dashPage=0;
   renderDashProgressFiltered();
 
   var lagEl=document.getElementById('dash-lagging');
@@ -1292,16 +1291,15 @@ function countHwItemsT(hw){
   secs.forEach(function(s){ n+=(hw[s]||[]).length; }); return n;
 }
 var _dashPage=0;
-var DASH_PAGE_SIZE=10;
+var DASH_PAGE_SIZE=20;
 function filterDashProgress(q){
-  _dashPage=0;
   renderDashProgressFiltered(q);
 }
 function renderDashProgressFiltered(q){
   var dpEl=document.getElementById('dash-progress'); if(!dpEl) return;
   dpEl.innerHTML='';
   var rows=window._dashRows||[];
-  if(!rows.length){ dpEl.innerHTML='<div class="empty">Chưa có học viên</div>'; return; }
+  if(!rows.length){ dpEl.innerHTML='<div class="empty" style="grid-column:1/-1">Chưa có học viên</div>'; return; }
   var filterVal=(document.getElementById('dash-filter')||{}).value||'all';
   var searchQ=(q!==undefined?q:((document.getElementById('dash-search')||{}).value||'')).toLowerCase().trim();
   var filtered=rows.filter(function(r){
@@ -1309,57 +1307,55 @@ function renderDashProgressFiltered(q){
     var statusMatch=filterVal==='all'||(r.status===filterVal);
     return nameMatch&&statusMatch;
   });
-  var total=filtered.length;
-  var pages=Math.ceil(total/DASH_PAGE_SIZE)||1;
-  if(_dashPage>=pages) _dashPage=pages-1;
-  var start=_dashPage*DASH_PAGE_SIZE;
-  var pageRows=filtered.slice(start,start+DASH_PAGE_SIZE);
-  if(!pageRows.length){ dpEl.innerHTML='<div class="empty">Không có học viên nào khớp.</div>'; return; }
-  pageRows.forEach(function(r){
-    var s=r.s; var isFull=r.isFull; var total_items=r.total;
-    var goal=r.goal; var latestScore=r.latestScore;
-    var goalHtml='';
+  if(!filtered.length){ dpEl.innerHTML='<div class="empty" style="grid-column:1/-1">Không có học viên nào khớp.</div>'; return; }
+  filtered.forEach(function(r){
+    var s=r.s; var goal=r.goal; var latestScore=r.latestScore;
+    // Score bar
+    var scorePct=0; var scoreHtml=''; var barFillClass='';
     if(goal&&goal.target){
-      var gap=latestScore!==null?goal.target-latestScore:null;
-      var gapTxt=gap!==null?(gap>0?'còn '+gap+'đ':'✓ Đạt!'):'chưa có điểm';
+      var target=goal.target;
       var dlTxt=''; if(goal.deadline){var _gpt=goal.deadline.split('-'); dlTxt='T'+_gpt[1]+'/'+_gpt[0];}
-      var gapColor=gap!==null&&gap<=0?'var(--sage)':'var(--gold)';
-      goalHtml='<div style="display:flex;align-items:center;gap:.4rem;flex-shrink:0;">'
-        +'<span style="font-size:.62rem;color:var(--muted)">Mục tiêu:</span>'
-        +'<span style="font-family:\'Lora\',serif;font-size:.95rem;font-weight:700;color:'+gapColor+'">'+goal.target+'</span>'
-        +'<span style="font-size:.65rem;color:'+gapColor+'">'+gapTxt+'</span>'
-        +(dlTxt?'<span style="font-size:.62rem;color:var(--muted)">· 📅 '+dlTxt+'</span>':'')
-        +'</div>';
+      if(latestScore!==null){
+        scorePct=Math.min(Math.round(latestScore/target*100),100);
+        var reached=latestScore>=target;
+        barFillClass=reached?'reached':'';
+        var gap=target-latestScore;
+        var gapColor=reached?'var(--sage)':'var(--gold)';
+        scoreHtml='<div class="sv-card-score-row">'
+          +'<span class="sv-card-score-val" style="color:'+gapColor+'">'+latestScore+'</span>'
+          +'<span class="sv-card-score-target">/ '+target+'</span>'
+          +(reached?'<span style="font-size:.65rem;color:var(--sage);font-weight:600;margin-left:.2rem">✓ Đạt!</span>'
+            :'<span style="font-size:.65rem;color:var(--muted);margin-left:.1rem">còn '+gap+'đ</span>')
+          +'</div>';
+      } else {
+        scorePct=0; barFillClass='';
+        scoreHtml='<div class="sv-card-score-row">'
+          +'<span style="font-size:.78rem;color:var(--muted);font-style:italic">Chưa có điểm</span>'
+          +'<span class="sv-card-score-target" style="margin-left:auto">/ '+target+'</span>'
+          +'</div>';
+      }
+      scoreHtml+='<div class="sv-card-bar-wrap"><div class="sv-card-bar-fill '+barFillClass+'" style="width:'+scorePct+'%"></div></div>';
+      if(dlTxt) scoreHtml+='<div style="font-size:.61rem;color:var(--muted);margin-top:.3rem;">📅 Mục tiêu: '+dlTxt+'</div>';
+    } else if(latestScore!==null){
+      // Có điểm nhưng không có goal
+      scoreHtml='<div class="sv-card-score-row"><span class="sv-card-score-val">'+latestScore+'</span><span class="sv-card-score-target">/ — (chưa đặt mục tiêu)</span></div>';
+    } else {
+      scoreHtml='<div class="sv-card-score-row"><span style="font-size:.78rem;color:var(--muted);font-style:italic">Chưa có điểm</span></div>';
     }
-    var statusHtml=isFull
-      ?'<span style="font-size:.68rem;color:var(--sage);font-weight:600">\u2713 Đã nộp link</span>'
-      :(total_items?'<span style="font-size:.68rem;color:var(--muted)">Chưa nộp</span>':'<span style="font-size:.68rem;color:var(--muted)">Không có BTVN</span>');
-    var row=document.createElement('div'); row.className='prog-row'; row.style.flexWrap='wrap'; row.style.gap='.4rem';
-    row.style.cursor='pointer'; row.onclick=(function(sid){ return function(){ selSv(sid); }; })(s.id);
-    row.innerHTML='<div class="prog-sv-name">'+s.name+' <span style="opacity:.4;font-size:.68rem">'+s.id+'</span></div>'+
-      '<div class="prog-bar-wrap"><div class="prog-bar"><div class="prog-fill'+(isFull?' full':'')+'" style="width:'+(isFull?100:0)+'%"></div></div></div>'+
-      '<div class="prog-pct'+(isFull?' full':'')+'">'+( isFull?'\u2713 100%':'\u2014')+'</div>'+
-      statusHtml+goalHtml;
-    dpEl.appendChild(row);
+    // HW status badge
+    var hwTxt=r.isFull?'✓ Đã nộp link':(r.total?'⏳ Chưa nộp':'— Không có BT');
+    var hwCls=r.isFull?'done':(r.total?'pending':'');
+    var card=document.createElement('div'); card.className='sv-card';
+    card.onclick=(function(sid){ return function(){ selSv(sid); }; })(s.id);
+    card.innerHTML=
+      '<div class="sv-card-name">'+escHtml(s.name)+'</div>'
+      +'<div class="sv-card-id">'+escHtml(s.id)+'</div>'
+      +scoreHtml
+      +'<div class="sv-card-meta">'
+        +'<span class="sv-card-hw '+hwCls+'">'+hwTxt+'</span>'
+      +'</div>';
+    dpEl.appendChild(card);
   });
-  // Pagination controls
-  if(pages>1){
-    var pg=document.createElement('div');
-    pg.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:.6rem .8rem .2rem;font-size:.73rem;color:var(--muted);border-top:1px solid var(--line);margin-top:.4rem;';
-    var info=document.createElement('span'); info.textContent='Hiển thị '+(start+1)+'\u2013'+Math.min(start+DASH_PAGE_SIZE,total)+' / '+total+' học viên';
-    var btns=document.createElement('div'); btns.style.cssText='display:flex;gap:.3rem;';
-    if(_dashPage>0){
-      var bp=document.createElement('button'); bp.textContent='\u2190 Trước';
-      bp.style.cssText='padding:.28rem .7rem;font-size:.72rem;border:1px solid var(--border);background:var(--s2);color:var(--text);cursor:pointer;font-family:Be Vietnam Pro,sans-serif;';
-      bp.onclick=function(){ _dashPage--; renderDashProgressFiltered(); }; btns.appendChild(bp);
-    }
-    if(_dashPage<pages-1){
-      var bn=document.createElement('button'); bn.textContent='Sau \u2192';
-      bn.style.cssText='padding:.28rem .7rem;font-size:.72rem;border:1px solid var(--border);background:var(--s2);color:var(--text);cursor:pointer;font-family:Be Vietnam Pro,sans-serif;';
-      bn.onclick=function(){ _dashPage++; renderDashProgressFiltered(); }; btns.appendChild(bn);
-    }
-    pg.appendChild(info); pg.appendChild(btns); dpEl.appendChild(pg);
-  }
 }
 function renderSvProgress(s){
   var el=document.getElementById('sv-progress-list'); if(!el) return;
@@ -3033,7 +3029,7 @@ function closeSb(){
 // Auto-close sidebar on nav click (mobile)
 document.addEventListener('click', function(e){
   if(window.innerWidth>768) return;
-  if(e.target.closest('.nv')||e.target.closest('.sv-item')){
+  if(e.target.closest('.nv')){
     closeSb();
   }
 });
