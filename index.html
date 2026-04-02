@@ -83,6 +83,16 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
 .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.95rem;padding:0 .15rem;transition:color .15s;}
 .rm:hover{color:var(--rust);}
 .sc-val{font-family:'Lora',serif;font-size:1.25rem;color:var(--gold);min-width:44px;}
+/* New score entry layout */
+.sc-entry{padding:.65rem .8rem;border:1px solid var(--border);background:var(--s2);margin-bottom:.35rem;display:flex;align-items:center;justify-content:space-between;gap:.6rem;}
+.sc-entry.sc-pending{border-left:3px solid var(--gold);background:rgba(176,125,26,.04);}
+.sc-entry.sc-latest{border-left:3px solid var(--sage);}
+.sc-entry-main{display:flex;align-items:baseline;gap:.7rem;flex:1;min-width:0;}
+.sc-entry-score{font-family:'Lora',serif;font-size:1.5rem;font-weight:700;color:var(--gold);line-height:1;flex-shrink:0;}
+.sc-entry-info{flex:1;min-width:0;}
+.sc-entry-name{font-size:.82rem;font-weight:600;color:var(--text);line-height:1.3;word-break:break-word;}
+.sc-entry-date{font-size:.67rem;color:var(--muted);margin-top:.15rem;}
+.sc-entry-acts{display:flex;align-items:center;gap:.3rem;flex-shrink:0;}
 .mod-sel{background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:\"Be Vietnam Pro\",sans-serif;font-size:.74rem;padding:.28rem .5rem;cursor:pointer;outline:none;}
 .mod-done{border-left:3px solid var(--sage)!important;}
 .mod-current{border-left:3px solid var(--gold)!important;}
@@ -396,7 +406,7 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
   </div>
   <div class="sb-nav">
     <div class="nv on" id="nv-dash"    onclick="showPg('dash',this)">📊 Tổng quan</div>
-    <div class="nv"    id="nv-scores"  onclick="showPg('scores',this)">🎯 Duyệt điểm <span class="cnt" id="score-cnt" style="display:none">0</span></div>
+    <!-- Duyệt điểm removed — students save directly -->
     <div class="nv"    id="nv-classes" onclick="showPg('classes',this)">🏫 Lớp học</div>
     <div class="nv"    id="nv-books"   onclick="showPg('books',this)">📅 Lịch book 1-1</div>
     <div class="nv"    id="nv-slots"   onclick="showPg('slots',this)">⏰ Khung giờ</div>
@@ -694,6 +704,7 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
 <div class="ov" id="m-score">
   <div class="modal">
     <h3>Thêm điểm TOEIC</h3>
+    <div class="fl"><label>Tên bài test</label><input id="nc-testname" type="text" placeholder="VD: ETS 2024 Test 1, Hackers Vol.3..."></div>
     <div class="fl"><label>Điểm (0–990)</label><input id="nc-score" type="number" min="0" max="990" placeholder="650"></div>
     <div class="fl"><label>Ngày kiểm tra</label><input id="nc-date" type="date"></div>
     <div class="mf"><button class="btn bg" onclick="closeM('m-score')">Huỷ</button><button class="btn bp" onclick="addScore()">Thêm</button></div>
@@ -1076,11 +1087,7 @@ db.ref('slots').on('value', function(snap){
   allSlots = snap.val() || {};
   if(document.getElementById('pg-slots').classList.contains('on')) renderSlots();
 });
-db.ref('scoreRequests').on('value', function(snap){
-  allScoreReqs = snap.val() || {};
-  updateNavBadges();
-  if(document.getElementById('pg-scores').classList.contains('on')) renderScoreReviews();
-});
+  // scoreRequests listener removed — students save directly
 db.ref('progress').on('value', function(snap){
   allProgress = snap.val() || {};
   _progressReady = true;
@@ -1167,7 +1174,6 @@ function showPg(name, el){
   document.getElementById('tb-sub').textContent='';
   document.getElementById('tb-acts').innerHTML='';
   if(name==='dash')    renderDash();
-  if(name==='scores')  renderScoreReviews();
   if(name==='books')   renderBooks();
   if(name==='slots')   renderSlots();
   if(name==='classes'){ CLS_ID=null; exitClsDetail(); renderClsGrid(); }
@@ -1220,13 +1226,8 @@ function loadSvPage(id){
 function updateNavBadges(){
   var books=Object.values(allBookings);
   var pend=books.filter(function(b){ return b.status==='pending'; }).length;
-  var pendScores=Object.values(allScoreReqs).filter(function(r){ return r.status==='pending'; }).length;
   var nv=document.getElementById('nv-books');
   if(nv) nv.innerHTML='📅 Lịch book 1-1'+(pend?'<span class="cnt">'+pend+'</span>':'');
-  var scEl=document.getElementById('score-cnt');
-  if(scEl){ if(pendScores){scEl.style.display='inline';scEl.textContent=pendScores;}else scEl.style.display='none'; }
-  var nvSc=document.getElementById('nv-scores');
-  if(nvSc) nvSc.innerHTML='🎯 Duyệt điểm'+(pendScores?'<span class="cnt">'+pendScores+'</span>':'');
 }
 
 /* ═══ DASHBOARD ═══ */
@@ -1567,35 +1568,42 @@ function cpLink(){
 /* ═══ SCORES ═══ */
 function renderScores(sc){
   var el=document.getElementById('score-list');
-  var pending=Object.values(allScoreReqs).filter(function(r){return r.studentId===CID&&r.status==='pending';});
-  var allEntries=pending.slice().concat((sc||[]).slice());
-  if(!allEntries.length){ el.innerHTML='<div class="empty">Chưa có điểm</div>'; return; }
+  if(!(sc&&sc.length)){ el.innerHTML='<div class="empty">Chưa có điểm</div>'; return; }
   el.innerHTML='';
-  pending.forEach(function(r){
-    var d=document.createElement('div'); d.className='li'; d.style.borderLeft='3px solid var(--gold)';
-    var partsStr=r.parts&&Object.keys(r.parts).length?Object.entries(r.parts).map(function(e){return e[0].toUpperCase()+':'+e[1];}).join(' '):'';
-    d.innerHTML='<div class="sc-val" style="color:var(--gold)">'+r.score+'</div><div class="li-body"><div class="li-s">'+(r.date||'—')+(partsStr?' · '+partsStr:'')+'</div></div><span class="bs bsp" style="font-size:.6rem;padding:.12rem .4rem">⏳ Chờ</span><button class="btn-ok" style="font-size:.68rem;padding:.25rem .55rem;margin-left:.3rem" onclick="reviewScore(\''+r.id+'\',\'approved\')">✓</button><button class="btn-no" style="font-size:.68rem;padding:.25rem .45rem;" onclick="reviewScore(\''+r.id+'\',\'rejected\')">✕</button>';
-    el.appendChild(d);
-  });
   var sorted=(sc||[]).slice().sort(function(a,b){return b.date.localeCompare(a.date);});
   sorted.forEach(function(s,i){
-    var partsStr=s.parts&&Object.keys(s.parts).length?' · '+Object.entries(s.parts).map(function(e){return e[0].toUpperCase()+':'+e[1];}).join(' '):'';
-    var d=document.createElement('div'); d.className='li';
-    if(i===0) d.style.borderLeft='3px solid var(--sage)';
-    d.innerHTML='<div class="sc-val" style="'+(i===0?'color:var(--sage)':'')+'">'+s.score+'</div><div class="li-body"><div class="li-s">'+(s.date||'—')+partsStr+'</div></div><button class="rm" onclick="rmScore('+i+')">✕</button>';
+    var d=document.createElement('div'); d.className='sc-entry'+(i===0?' sc-latest':'');
+    d.innerHTML=tcSeHTML(s.score, s.testName, s.date, false, i===0)
+      +'<div class="sc-entry-acts"><button class="rm" onclick="rmScore('+i+')">✕</button></div>';
     el.appendChild(d);
   });
+}
+function tcSeHTML(score, testName, date, isPending, isLatest){
+  var dateStr=date||'';
+  if(dateStr.match(/^\d{4}-\d{2}-\d{2}$/)){var _p=dateStr.split('-');dateStr=_p[2]+'/'+_p[1]+'/'+_p[0];}
+  var scoreColor=isPending?'var(--gold)':isLatest?'var(--sage)':'var(--gold)';
+  return '<div class="sc-entry-main">'
+    +'<div class="sc-entry-score" style="color:'+scoreColor+'">'+score+'</div>'
+    +'<div class="sc-entry-info">'
+      +(testName?'<div class="sc-entry-name">'+escHtml(testName)+'</div>':'<div class="sc-entry-name" style="color:var(--muted);font-style:italic;font-weight:400">Không có tên đề</div>')
+      +(dateStr?'<div class="sc-entry-date">📅 '+dateStr+'</div>':'')
+    +'</div>'
+  +'</div>';
 }
 function addScore(){
   var sc=parseInt(document.getElementById('nc-score').value);
   var dt=document.getElementById('nc-date').value;
+  var tn=(document.getElementById('nc-testname').value||'').trim();
   if(!sc||sc<0||sc>990){ alert('Điểm 0–990!'); return; }
   var s=allStudents[CID];
-  var scores=(s.scores||[]).slice().concat([{score:sc,date:dt}]).sort(function(a,b){return a.date.localeCompare(b.date);});
+  var entry={score:sc,date:dt};
+  if(tn) entry.testName=tn;
+  var scores=(s.scores||[]).slice().concat([entry]).sort(function(a,b){return a.date.localeCompare(b.date);});
   db.ref('students/'+CID+'/scores').set(scores);
   closeM('m-score');
   document.getElementById('nc-score').value='';
   document.getElementById('nc-date').value='';
+  document.getElementById('nc-testname').value='';
   toast('✅ Thêm điểm!');
 }
 function rmScore(i){
