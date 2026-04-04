@@ -659,6 +659,24 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
             <div class="link-box"><div class="link-url" id="sv-link"></div><button class="link-cp" onclick="cpLink()">Copy</button></div>
             <div style="font-size:.72rem;color:var(--muted)">Gửi link này cho học viên. Họ nhập mã để đăng nhập.</div>
           </div>
+
+          <div class="card" id="notif-card">
+            <div class="card-hd">🔔 Gửi thông báo</div>
+            <div class="fl">
+              <label>Tiêu đề</label>
+              <input id="notif-title" type="text" placeholder="VD: Nhớ làm bài nhé!" maxlength="80">
+            </div>
+            <div class="fl">
+              <label>Nội dung</label>
+              <textarea id="notif-body" rows="2" placeholder="VD: Bài TOEIC Part 5 hạn nộp Chủ nhật này đó nhé~" style="resize:vertical;min-height:3rem"></textarea>
+            </div>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.2rem">
+              <button class="btn bp" onclick="sendNotifToStudent()" style="flex:1">
+                📨 Gửi cho <span id="notif-btn-name">học viên này</span>
+              </button>
+            </div>
+            <div id="notif-status" style="font-size:.72rem;margin-top:.5rem;color:var(--muted)"></div>
+          </div>
         </div>
 
         <!-- RIGHT -->
@@ -1015,6 +1033,41 @@ function fmtTimeT(iso){
   return dd+'/'+mm+' '+hh+':'+mi;
 }
 function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+/* ═══════════════════════════════════════════════════════════════
+   PUSH NOTIFICATION — gửi thủ công từ teacher panel
+   Ghi vào Firebase: notifications/{studentId}/{timestamp}
+   Student site lắng nghe child_added và show notification qua SW
+   ═══════════════════════════════════════════════════════════════ */
+function sendNotifToStudent(){
+  if(!CID){ toast('Chưa chọn học viên!', false); return; }
+  var title = (document.getElementById('notif-title').value||'').trim();
+  var body  = (document.getElementById('notif-body').value||'').trim();
+  if(!title){ toast('Nhập tiêu đề thông báo!', false); return; }
+  if(!body)  { toast('Nhập nội dung thông báo!', false); return; }
+
+  var statusEl = document.getElementById('notif-status');
+  if(statusEl) statusEl.textContent = 'Đang gửi...';
+
+  var key = 'n' + Date.now();
+  db.ref('notifications/' + CID + '/' + key).set({
+    title: title,
+    body:  body,
+    sentAt: new Date().toISOString(),
+    seen: false
+  }).then(function(){
+    toast('📨 Đã gửi thông báo!');
+    document.getElementById('notif-title').value = '';
+    document.getElementById('notif-body').value  = '';
+    if(statusEl){
+      var s = allStudents[CID];
+      statusEl.textContent = '✓ Đã gửi lúc ' + new Date().toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'}) + ' → ' + (s&&s.name||CID);
+    }
+  }).catch(function(err){
+    toast('Lỗi gửi: ' + err.message, false);
+    if(statusEl) statusEl.textContent = '';
+  });
+}
+
 function toast(m,ok){
   if(ok===undefined) ok=true;
   var t=document.getElementById('toast');
@@ -1206,6 +1259,11 @@ function loadSvPage(id){
   onCourseTypeChange();
   var base=window.location.href.replace('teacher.html','student.html').replace(/\?.*$/,'');
   document.getElementById('sv-link').textContent=base+'?auto='+s.id;
+  // Update notification button label
+  var btnName=document.getElementById('notif-btn-name');
+  if(btnName) btnName.textContent=(s.name||s.id).split(' ').pop();
+  var notifStatus=document.getElementById('notif-status');
+  if(notifStatus) notifStatus.textContent='';
   renderScores(s.scores||[]);
   renderSvProgress(s);
   renderMods(s.modules||[]);
