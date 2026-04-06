@@ -144,6 +144,13 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
 .sv-card-hw.done{color:var(--sage);font-weight:600;}
 .sv-card-hw.pending{color:var(--gold);}
 .sv-card-dl{font-size:.62rem;color:var(--muted);font-family:"JetBrains Mono",monospace;}
+.sv-card.frozen{opacity:.55;border-color:var(--rust);}
+.sv-card.frozen:hover{border-color:var(--rust);box-shadow:none;transform:none;}
+.frozen-badge{display:inline-flex;align-items:center;gap:.2rem;font-size:.6rem;font-weight:700;color:var(--rust);background:rgba(192,52,26,.09);border:1px solid rgba(192,52,26,.25);padding:.1rem .38rem;letter-spacing:.04em;margin-left:.35rem;}
+.btn-freeze{background:none;border:1px solid var(--rust)!important;color:var(--rust);padding:.44rem 1rem;font-family:"Be Vietnam Pro",sans-serif;font-size:.77rem;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn-freeze:hover{background:var(--rust);color:#fff;}
+.btn-unfreeze{background:var(--rust);color:#fff;border:none;padding:.44rem 1rem;font-family:"Be Vietnam Pro",sans-serif;font-size:.77rem;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn-unfreeze:hover{opacity:.85;}
 
 /* ─── LINK BOX ─── */
 .link-box{display:flex;align-items:center;gap:.6rem;background:var(--s3);border:1px solid var(--border);padding:.65rem .85rem;margin-bottom:.8rem;}
@@ -1240,9 +1247,21 @@ function selSv(id){
   var s=allStudents[id];
   document.getElementById('tb-title').textContent=s?s.name:'Học viên';
   document.getElementById('tb-sub').textContent=s?'ID: '+s.id:'';
+  var isFrozen=s&&s.frozen;
   document.getElementById('tb-acts').innerHTML=
     '<button class="btn bd" onclick="delSv()">Xoá</button>'+
+    (isFrozen
+      ? '<button class="btn-unfreeze" onclick="toggleFreeze()">🔓 Bỏ đóng băng</button>'
+      : '<button class="btn-freeze" onclick="toggleFreeze()">🔒 Đóng băng</button>')+
     '<button class="btn bp" onclick="saveSv()">Lưu tất cả</button>';
+}
+
+function toggleFreeze(){
+  var s=allStudents[CID]; if(!s) return;
+  var newVal=!s.frozen;
+  db.ref('students/'+CID+'/frozen').set(newVal).then(function(){
+    selSv(CID);
+  });
 }
 
 function loadSvPage(id){
@@ -1430,10 +1449,10 @@ function renderDashProgressFiltered(q){
     // HW status badge
     var hwTxt=r.isFull?'✓ Đã nộp link':(r.total?'⏳ Chưa nộp':'— Không có BT');
     var hwCls=r.isFull?'done':(r.total?'pending':'');
-    var card=document.createElement('div'); card.className='sv-card';
+    var card=document.createElement('div'); card.className='sv-card'+(s.frozen?' frozen':'');
     card.onclick=(function(sid){ return function(){ selSv(sid); }; })(s.id);
     card.innerHTML=
-      '<div class="sv-card-name">'+escHtml(s.name)+'</div>'
+      '<div class="sv-card-name">'+escHtml(s.name)+(s.frozen?'<span class="frozen-badge">🔒 Đóng băng</span>':'')+'</div>'
       +'<div class="sv-card-id">'+escHtml(s.id)+'</div>'
       +scoreHtml
       +'<div class="sv-card-meta">'
