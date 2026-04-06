@@ -1879,6 +1879,7 @@ function renderHw(hw){
   var td=today();
   // Classify each hw entry
   var classified=hw.slice().sort(function(a,b){return b.date.localeCompare(a.date);}).map(function(h){
+    var svDayLinkCls=(allDayLinks[CID]&&allDayLinks[CID][h.id])||null;
     var subCount=0;
     HW_SECTIONS.forEach(function(sec){ (h[sec]||[]).forEach(function(_,i){
       var sub=svSubs[h.id+'_'+sec+'_'+i];
@@ -1886,16 +1887,19 @@ function renderHw(hw){
     }); });
     var totalItems=0;
     HW_SECTIONS.forEach(function(sec){ totalItems+=(h[sec]||[]).length; });
-    var progressPct=totalItems?Math.round(subCount/totalItems*100):0;
+    // Nếu HV đã nộp link tổng hợp → coi như 100% hoàn thành
+    var hasDayLink=!!(svDayLinkCls&&svDayLinkCls.link);
+    var effectiveSubCount=hasDayLink?totalItems:subCount;
+    var progressPct=totalItems?Math.round(effectiveSubCount/totalItems*100):0;
     var endD=h.endDate&&h.endDate!==h.date?h.endDate:h.date;
     var isExpired=endD<td;
-    var isDone=totalItems>0&&progressPct===100;
+    var isDone=(hasDayLink&&totalItems>0)||(totalItems>0&&progressPct===100);
     // status = tag hiển thị (ưu tiên expired)
     var status=isExpired?'expired':(isDone?'done':'active');
     // tags = tập hợp filter: bài expired nhưng chưa done vẫn hiện ở tab "Đang học"
     // để giáo viên thấy học viên nào chưa nộp dù đã quá hạn
     var tags={active:!isDone, done:isDone, expired:isExpired};
-    return {h:h,subCount:subCount,totalItems:totalItems,progressPct:progressPct,status:status,tags:tags,endD:endD};
+    return {h:h,subCount:effectiveSubCount,totalItems:totalItems,progressPct:progressPct,status:status,tags:tags,endD:endD,hasDayLink:hasDayLink};
   });
   // Update badges — done đếm cả bài expired+done
   var counts={all:classified.length,active:0,done:0,expired:0};
@@ -1946,14 +1950,15 @@ function renderHw(hw){
         var teacherLink=item.link?'<a class="hw-link-a" href="'+escHtml(item.link)+'" target="_blank">'+linkLabel+'</a>':'';
         var sub=svSubs[h.id+'_'+sec+'_'+i];
         var subHtml;
-        if(!sub){
-          subHtml='<span class="hw-sub-empty">Chưa nộp</span>';
-        } else if(sub.link){
+        if(sub && sub.link){
           subHtml='<a class="hw-sub-link" href="'+escHtml(sub.link)+'" target="_blank">📤 Bài nộp</a>'
                  +'<span class="hw-sub-time">'+fmtTimeT(sub.submittedAt)+'</span>';
-        } else if(sub.ticked){
+        } else if(sub && sub.ticked){
           subHtml='<span style="font-size:.68rem;font-weight:600;color:var(--sage);padding:.18rem .5rem;border:1px solid rgba(46,125,70,.25);">✓ Đã hoàn thành</span>'
                  +'<span class="hw-sub-time">'+fmtTimeT(sub.tickedAt)+'</span>';
+        } else if(c.hasDayLink){
+          // HV đã nộp link tổng hợp → coi item này hoàn thành qua link tổng hợp
+          subHtml='<span style="font-size:.68rem;font-weight:600;color:var(--sage);padding:.18rem .5rem;border:1px solid rgba(46,125,70,.25);">✓ Qua link tổng hợp</span>';
         } else {
           subHtml='<span class="hw-sub-empty">Chưa nộp</span>';
         }
