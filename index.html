@@ -203,9 +203,15 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
 .hw-item-row input:focus{border-color:var(--gold);}
 .hw-item-row input.link-inp{color:var(--blue);font-size:.75rem;}
 .hw-item-row input.link-inp::placeholder{color:var(--muted);}
-.hw-vocab-preset{padding:.38rem .5rem;background:var(--s3);border:1px solid var(--border);color:var(--gold);font-size:.72rem;font-family:"Be Vietnam Pro",sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0;}
-.hw-vocab-preset:focus{outline:none;border-color:var(--gold);}
-.hw-vocab-preset option{color:var(--text);background:var(--s2);}
+.hw-text-wrap{position:relative;flex:1;display:flex;align-items:center;}
+.hw-text-wrap input[type=text]{width:100%;padding-right:1.7rem;}
+.hw-preset-btn{position:absolute;right:.35rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:.8rem;line-height:1;padding:.1rem .15rem;color:var(--gold);opacity:.75;transition:opacity .15s;}
+.hw-preset-btn:hover{opacity:1;}
+.hw-preset-menu{position:absolute;top:calc(100% + 3px);left:0;background:var(--s1);border:1px solid var(--border);box-shadow:0 4px 14px rgba(0,0,0,.14);z-index:200;min-width:200px;display:none;}
+.hw-preset-menu.open{display:block;}
+.hw-preset-menu button{display:block;width:100%;text-align:left;background:none;border:none;padding:.52rem .85rem;font-size:.78rem;font-family:"Be Vietnam Pro",sans-serif;color:var(--text);cursor:pointer;border-bottom:1px solid var(--border);}
+.hw-preset-menu button:last-child{border-bottom:none;}
+.hw-preset-menu button:hover{background:var(--s2);color:var(--gold);}
 .hw-desc-wrap{width:100%;display:none;padding-left:0;}
 .hw-desc-wrap.open{display:block;}
 .hw-desc-toolbar{display:flex;gap:2px;margin-bottom:3px;padding:3px 5px;background:var(--s3);border:1px solid var(--border);border-bottom:none;}
@@ -1797,6 +1803,27 @@ var HW_COLORS={vocab:'#C9963A',reading:'#4A9B5E',listening:'#3B82C4',other:'#A07
 var HW_LABELS={vocab:'📗 Từ vựng',reading:'📘 Đọc',listening:'📙 Nghe',other:'⭐ Khác',practice:'📝 Đề luyện thi'};
 var hwDraft={vocab:[],reading:[],listening:[],other:[],practice:[]};
 
+function hwCloseAllPresets(){ document.querySelectorAll('.hw-preset-menu.open').forEach(function(m){ m.classList.remove('open'); }); }
+function hwTogglePreset(btn){
+  var menu = btn.nextElementSibling;
+  var isOpen = menu.classList.contains('open');
+  hwCloseAllPresets();
+  if(!isOpen) menu.classList.add('open');
+}
+function hwPickPreset(e, draftName, idx, val){
+  e.preventDefault();
+  var draft = draftName==='hwDraft' ? hwDraft : clsHwDraft;
+  draft['vocab'][idx].text = val;
+  hwCloseAllPresets();
+  var menu = e.target.closest('.hw-preset-menu');
+  if(menu){
+    var inp = menu.parentNode.querySelector('input[type=text]');
+    if(inp){ inp.value = val; }
+  }
+}
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.hw-text-wrap')) hwCloseAllPresets();
+});
 function addHwItem(sec){ hwDraft[sec].push({text:'',link:'',desc:''}); renderHwModal(); }
 function removeHwItem(sec,i){ hwDraft[sec].splice(i,1); renderHwModal(); }
 
@@ -1807,18 +1834,20 @@ function renderHwModal(){
       var hasDesc=!!(item.desc&&item.desc.trim());
       var uid='hw-'+sec+'-'+i;
       var row=document.createElement('div'); row.className='hw-item-row';
-      var vocabPreset = sec==='vocab'
-        ? '<select class="hw-vocab-preset" onchange="(function(el){if(!el.value)return;var inp=el.parentNode.querySelector(\'input[type=text]\');inp.value=el.value;hwDraft[\'vocab\']['+i+'].text=el.value;el.value=\'\'})(this)">'+
-          '<option value="">⚡ Chọn nhanh...</option>'+
-          '<option>Học/Ghi chép Flashcard</option>'+
-          '<option>Chơi game</option>'+
-          '<option>Vận dụng Từ vựng</option>'+
-          '</select>'
+      var presetHtml = sec==='vocab'
+        ? '<button type="button" class="hw-preset-btn" title="Chọn nhanh" onclick="hwTogglePreset(this)">⚡</button>'+
+          '<div class="hw-preset-menu">'+
+          '<button type="button" onmousedown="hwPickPreset(event,\'hwDraft\','+i+',\'Học/Ghi chép Flashcard\')">Học/Ghi chép Flashcard</button>'+
+          '<button type="button" onmousedown="hwPickPreset(event,\'hwDraft\','+i+',\'Chơi game\')">Chơi game</button>'+
+          '<button type="button" onmousedown="hwPickPreset(event,\'hwDraft\','+i+',\'Vận dụng Từ vựng\')">Vận dụng Từ vựng</button>'+
+          '</div>'
         : '';
       row.innerHTML=
         '<div class="hw-item-top">'+
-          vocabPreset+
+          '<div class="hw-text-wrap">'+
           '<input type="text" placeholder="Nội dung bài tập..." value="'+escHtml(item.text)+'" oninput="hwDraft[\''+sec+'\']['+i+'].text=this.value">'+
+          presetHtml+
+          '</div>'+
           '<input type="text" class="link-inp" placeholder="Link (paste vào đây)" value="'+escHtml(item.link)+'" oninput="hwDraft[\''+sec+'\']['+i+'].link=this.value">'+
           '<button class="hw-desc-toggle'+(hasDesc?' has-desc':'')+'" onclick="toggleDescEditor(\''+uid+'\',\''+sec+'\','+i+')" title="Thêm mô tả / hướng dẫn">'+
             (hasDesc?'📝 Có mô tả':'+ Mô tả')+
@@ -2397,18 +2426,20 @@ function buildClsHwItemRow(sec, i){
   var row = document.createElement('div'); row.className = 'hw-item-row';
   var hasDesc = !!(item.desc && item.desc.trim());
   var uid = 'cls-hw-'+sec+'-'+i;
-  var clsVocabPreset = sec==='vocab'
-    ? '<select class="hw-vocab-preset" onchange="(function(el){if(!el.value)return;var inp=el.parentNode.querySelector(\'input[type=text]\');inp.value=el.value;clsHwDraft[\'vocab\']['+i+'].text=el.value;el.value=\'\'})(this)">'+
-      '<option value="">⚡ Chọn nhanh...</option>'+
-      '<option>Học/Ghi chép Flashcard</option>'+
-      '<option>Chơi game</option>'+
-      '<option>Vận dụng Từ vựng</option>'+
-      '</select>'
+  var clsPresetHtml = sec==='vocab'
+    ? '<button type="button" class="hw-preset-btn" title="Chọn nhanh" onclick="hwTogglePreset(this)">⚡</button>'+
+      '<div class="hw-preset-menu">'+
+      '<button type="button" onmousedown="hwPickPreset(event,\'clsHwDraft\','+i+',\'Học/Ghi chép Flashcard\')">Học/Ghi chép Flashcard</button>'+
+      '<button type="button" onmousedown="hwPickPreset(event,\'clsHwDraft\','+i+',\'Chơi game\')">Chơi game</button>'+
+      '<button type="button" onmousedown="hwPickPreset(event,\'clsHwDraft\','+i+',\'Vận dụng Từ vựng\')">Vận dụng Từ vựng</button>'+
+      '</div>'
     : '';
   row.innerHTML =
     '<div class="hw-item-top">'+
-      clsVocabPreset+
+      '<div class="hw-text-wrap">'+
       '<input type="text" placeholder="Nội dung bài tập..." value="'+escHtml(item.text||'')+'" oninput="clsHwDraft[\''+sec+'\']['+i+'].text=this.value">'+
+      clsPresetHtml+
+      '</div>'+
       '<input type="text" class="link-inp" placeholder="Link (paste vào đây)" value="'+escHtml(item.link||'')+'" oninput="clsHwDraft[\''+sec+'\']['+i+'].link=this.value">'+
       '<button class="hw-desc-toggle'+(hasDesc?' has-desc':'')+'" onclick="toggleClsDescEditor(\''+uid+'\',\''+sec+'\','+i+')" title="Thêm mô tả / hướng dẫn">'+
         (hasDesc?'📝 Có mô tả':'+ Mô tả')+
