@@ -318,6 +318,21 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
 .modal{background:var(--s1);border:1px solid var(--border);padding:1.8rem;width:440px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.12);}
 .modal h3{font-family:'Lora',serif;font-size:1.15rem;color:var(--gold);margin-bottom:1.4rem;}
 .mf{display:flex;justify-content:flex-end;gap:.5rem;margin-top:1.3rem;padding-top:.9rem;border-top:1px solid var(--border);}
+/* ── m-hw redesign ── */
+#m-hw .modal{width:700px;max-width:96vw;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;}
+#m-hw .hw-modal-header{padding:1.4rem 1.8rem 1rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+#m-hw .hw-modal-header h3{margin:0;font-family:'Lora',serif;font-size:1.15rem;color:var(--gold);}
+#m-hw .hw-modal-meta{display:flex;gap:.7rem;margin-top:1rem;flex-wrap:wrap;}
+#m-hw .hw-modal-meta .fl{margin-bottom:0;flex:1;min-width:140px;}
+#m-hw .hw-modal-body{flex:1;overflow-y:auto;padding:1.2rem 1.8rem;display:grid;gap:.75rem;}
+#m-hw .hw-modal-footer{padding:.9rem 1.8rem;border-top:2px solid var(--border);display:flex;justify-content:flex-end;gap:.55rem;flex-shrink:0;background:var(--s1);}
+#m-hw .hw-sec-card{border:1px solid var(--border);border-radius:2px;overflow:hidden;}
+#m-hw .hw-sec-card-header{display:flex;align-items:center;gap:.5rem;padding:.6rem .9rem;background:var(--s2);}
+#m-hw .hw-sec-card-label{font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;}
+#m-hw .hw-sec-card-body{padding:.7rem .9rem .6rem;}
+#m-hw .hw-sec-card-body .hw-item-row:last-of-type{margin-bottom:0;}
+#m-hw .hw-add-btn{width:100%;margin-top:.45rem;font-size:.73rem;border-style:dashed;}
+.hw-sec-card-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .ts-btn{padding:.42rem .3rem;background:var(--s2);border:1px solid var(--border);color:var(--muted);font-family:\"Be Vietnam Pro\",sans-serif;font-size:.72rem;cursor:pointer;transition:all .15s;text-align:center;line-height:1.3;}
 .ts-btn:hover{border-color:var(--gold);color:var(--text);}
 .ts-btn.sel{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:600;}
@@ -760,52 +775,82 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
 </div>
 
 <div class="ov" id="m-hw">
-  <div class="modal" style="width:560px;max-width:95vw;">
-    <h3 id="m-hw-title">📋 Thêm BTVN</h3>
-    <div class="fl-row">
-      <div class="fl"><label>Ngày bắt đầu</label><input id="hw-date" type="date"></div>
-      <div class="fl"><label>Ngày kết thúc (để trống = 1 ngày)</label><input id="hw-enddate" type="date"></div>
-    </div>
-    <div class="fl-row">
-      <div class="fl" style="flex:2"><label>Tiêu đề (tuỳ chọn)</label><input id="hw-label" type="text" placeholder="VD: Ngày 24/3 – 26/3"></div>
+  <div class="modal">
+    <!-- HEADER -->
+    <div class="hw-modal-header">
+      <h3 id="m-hw-title">📋 Thêm BTVN</h3>
+      <div class="hw-modal-meta">
+        <div class="fl"><label>Ngày bắt đầu</label><input id="hw-date" type="date"></div>
+        <div class="fl"><label>Ngày kết thúc <span style="font-weight:400;opacity:.7">(để trống = 1 ngày)</span></label><input id="hw-enddate" type="date"></div>
+        <div class="fl" style="flex:1.5"><label>Tiêu đề <span style="font-weight:400;opacity:.7">(tuỳ chọn)</span></label><input id="hw-label" type="text" placeholder="VD: Ngày 24/3 – 26/3"></div>
+      </div>
     </div>
 
-    <!-- 4 SECTIONS -->
-    <div style="display:grid;gap:.9rem;margin-top:.4rem;">
+    <!-- BODY (scrollable) -->
+    <div class="hw-modal-body">
       <!-- TỪ VỰNG -->
-      <div style="background:var(--s2);border:1px solid var(--border);padding:.85rem;">
-        <div style="font-size:.67rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#C9963A;margin-bottom:.6rem;">📗 Từ vựng</div>
-        <div id="hw-vocab-items"></div>
-        <button class="btn bg" style="width:100%;margin-top:.4rem;font-size:.73rem;" onclick="addHwItem('vocab')">+ Thêm mục</button>
+      <div class="hw-sec-card">
+        <div class="hw-sec-card-header">
+          <span class="hw-sec-card-dot" style="background:#C9963A"></span>
+          <span class="hw-sec-card-label" style="color:#C9963A">📗 Từ vựng</span>
+        </div>
+        <div class="hw-sec-card-body">
+          <div id="hw-vocab-items"></div>
+          <button class="btn bg hw-add-btn" onclick="addHwItem('vocab')">+ Thêm mục</button>
+        </div>
       </div>
       <!-- ĐỌC -->
-      <div style="background:var(--s2);border:1px solid var(--border);padding:.85rem;">
-        <div style="font-size:.67rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#4A9B5E;margin-bottom:.6rem;">📘 Đọc</div>
-        <div id="hw-reading-items"></div>
-        <button class="btn bg" style="width:100%;margin-top:.4rem;font-size:.73rem;" onclick="addHwItem('reading')">+ Thêm mục</button>
+      <div class="hw-sec-card">
+        <div class="hw-sec-card-header">
+          <span class="hw-sec-card-dot" style="background:#4A9B5E"></span>
+          <span class="hw-sec-card-label" style="color:#4A9B5E">📘 Đọc</span>
+        </div>
+        <div class="hw-sec-card-body">
+          <div id="hw-reading-items"></div>
+          <button class="btn bg hw-add-btn" onclick="addHwItem('reading')">+ Thêm mục</button>
+        </div>
       </div>
       <!-- NGHE -->
-      <div style="background:var(--s2);border:1px solid var(--border);padding:.85rem;">
-        <div style="font-size:.67rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#3B82C4;margin-bottom:.6rem;">📙 Nghe</div>
-        <div id="hw-listening-items"></div>
-        <button class="btn bg" style="width:100%;margin-top:.4rem;font-size:.73rem;" onclick="addHwItem('listening')">+ Thêm mục</button>
+      <div class="hw-sec-card">
+        <div class="hw-sec-card-header">
+          <span class="hw-sec-card-dot" style="background:#3B82C4"></span>
+          <span class="hw-sec-card-label" style="color:#3B82C4">📙 Nghe</span>
+        </div>
+        <div class="hw-sec-card-body">
+          <div id="hw-listening-items"></div>
+          <button class="btn bg hw-add-btn" onclick="addHwItem('listening')">+ Thêm mục</button>
+        </div>
       </div>
       <!-- KHÁC -->
-      <div style="background:var(--s2);border:1px solid var(--border);padding:.85rem;">
-        <div style="font-size:.67rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#A07040;margin-bottom:.6rem;">⭐ Khác</div>
-        <div id="hw-other-items"></div>
-        <button class="btn bg" style="width:100%;margin-top:.4rem;font-size:.73rem;" onclick="addHwItem('other')">+ Thêm mục</button>
+      <div class="hw-sec-card">
+        <div class="hw-sec-card-header">
+          <span class="hw-sec-card-dot" style="background:#A07040"></span>
+          <span class="hw-sec-card-label" style="color:#A07040">⭐ Khác</span>
+        </div>
+        <div class="hw-sec-card-body">
+          <div id="hw-other-items"></div>
+          <button class="btn bg hw-add-btn" onclick="addHwItem('other')">+ Thêm mục</button>
+        </div>
       </div>
       <!-- ĐỀ LUYỆN -->
-      <div style="background:#f0f4ff;border:1px solid #c5d0ee;padding:.85rem;">
-        <div style="font-size:.67rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#2457A0;margin-bottom:.3rem;">📝 Đề luyện thi</div>
-        <div style="font-size:.7rem;color:#6070a0;margin-bottom:.6rem;">Học viên mở đề → làm bài → nộp link → nhập điểm ở Tab Điểm số</div>
-        <div id="hw-practice-items"></div>
-        <button class="btn bg" style="width:100%;margin-top:.4rem;font-size:.73rem;border-color:#c5d0ee!important;color:#2457A0;" onclick="addHwItem('practice')">+ Thêm đề luyện</button>
+      <div class="hw-sec-card" style="border-color:#c5d0ee;">
+        <div class="hw-sec-card-header" style="background:#f0f4ff;">
+          <span class="hw-sec-card-dot" style="background:#2457A0"></span>
+          <span class="hw-sec-card-label" style="color:#2457A0">📝 Đề luyện thi</span>
+          <span style="margin-left:.6rem;font-size:.68rem;color:#6070a0;font-weight:400;text-transform:none;letter-spacing:0">Học viên mở đề → làm → nộp link → nhập điểm ở Tab Điểm số</span>
+        </div>
+        <div class="hw-sec-card-body" style="background:#f8faff;">
+          <div id="hw-practice-items"></div>
+          <button class="btn bg hw-add-btn" style="border-color:#c5d0ee!important;color:#2457A0;" onclick="addHwItem('practice')">+ Thêm đề luyện</button>
+        </div>
       </div>
     </div>
 
-    <div class="mf"><button class="btn bg" onclick="closeHwModal()">Huỷ</button><button class="btn bp" onclick="saveHw()">Lưu BTVN</button></div>
+    <!-- FOOTER -->
+    <div class="hw-modal-footer">
+      <button class="btn bg" onclick="closeHwModal()">Huỷ</button>
+      <button class="btn bp" onclick="saveHw()">💾 Lưu BTVN</button>
+    </div>
   </div>
 </div>
 
