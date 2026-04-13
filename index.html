@@ -203,6 +203,9 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
 .hw-item-row input:focus{border-color:var(--gold);}
 .hw-item-row input.link-inp{color:var(--blue);font-size:.75rem;}
 .hw-item-row input.link-inp::placeholder{color:var(--muted);}
+.hw-vocab-preset{padding:.38rem .5rem;background:var(--s3);border:1px solid var(--border);color:var(--gold);font-size:.72rem;font-family:"Be Vietnam Pro",sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.hw-vocab-preset:focus{outline:none;border-color:var(--gold);}
+.hw-vocab-preset option{color:var(--text);background:var(--s2);}
 .hw-desc-wrap{width:100%;display:none;padding-left:0;}
 .hw-desc-wrap.open{display:block;}
 .hw-desc-toolbar{display:flex;gap:2px;margin-bottom:3px;padding:3px 5px;background:var(--s3);border:1px solid var(--border);border-bottom:none;}
@@ -1759,8 +1762,17 @@ function renderHwModal(){
       var hasDesc=!!(item.desc&&item.desc.trim());
       var uid='hw-'+sec+'-'+i;
       var row=document.createElement('div'); row.className='hw-item-row';
+      var vocabPreset = sec==='vocab'
+        ? '<select class="hw-vocab-preset" onchange="(function(el){if(!el.value)return;var inp=el.parentNode.querySelector(\'input[type=text]\');inp.value=el.value;hwDraft[\'vocab\']['+i+'].text=el.value;el.value=\'\'})(this)">'+
+          '<option value="">⚡ Chọn nhanh...</option>'+
+          '<option>Học/Ghi chép Flashcard</option>'+
+          '<option>Chơi game</option>'+
+          '<option>Vận dụng Từ vựng</option>'+
+          '</select>'
+        : '';
       row.innerHTML=
         '<div class="hw-item-top">'+
+          vocabPreset+
           '<input type="text" placeholder="Nội dung bài tập..." value="'+escHtml(item.text)+'" oninput="hwDraft[\''+sec+'\']['+i+'].text=this.value">'+
           '<input type="text" class="link-inp" placeholder="Link (paste vào đây)" value="'+escHtml(item.link)+'" oninput="hwDraft[\''+sec+'\']['+i+'].link=this.value">'+
           '<button class="hw-desc-toggle'+(hasDesc?' has-desc':'')+'" onclick="toggleDescEditor(\''+uid+'\',\''+sec+'\','+i+')" title="Thêm mô tả / hướng dẫn">'+
@@ -2340,8 +2352,17 @@ function buildClsHwItemRow(sec, i){
   var row = document.createElement('div'); row.className = 'hw-item-row';
   var hasDesc = !!(item.desc && item.desc.trim());
   var uid = 'cls-hw-'+sec+'-'+i;
+  var clsVocabPreset = sec==='vocab'
+    ? '<select class="hw-vocab-preset" onchange="(function(el){if(!el.value)return;var inp=el.parentNode.querySelector(\'input[type=text]\');inp.value=el.value;clsHwDraft[\'vocab\']['+i+'].text=el.value;el.value=\'\'})(this)">'+
+      '<option value="">⚡ Chọn nhanh...</option>'+
+      '<option>Học/Ghi chép Flashcard</option>'+
+      '<option>Chơi game</option>'+
+      '<option>Vận dụng Từ vựng</option>'+
+      '</select>'
+    : '';
   row.innerHTML =
     '<div class="hw-item-top">'+
+      clsVocabPreset+
       '<input type="text" placeholder="Nội dung bài tập..." value="'+escHtml(item.text||'')+'" oninput="clsHwDraft[\''+sec+'\']['+i+'].text=this.value">'+
       '<input type="text" class="link-inp" placeholder="Link (paste vào đây)" value="'+escHtml(item.link||'')+'" oninput="clsHwDraft[\''+sec+'\']['+i+'].link=this.value">'+
       '<button class="hw-desc-toggle'+(hasDesc?' has-desc':'')+'" onclick="toggleClsDescEditor(\''+uid+'\',\''+sec+'\','+i+')" title="Thêm mô tả / hướng dẫn">'+
