@@ -330,24 +330,45 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
 #m-hw .hw-modal-body{flex:1;overflow-y:auto;padding:.45rem 1.2rem;display:flex;flex-direction:column;gap:0;min-height:0;}
 #m-hw .hw-modal-footer{padding:.45rem 1.2rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.4rem;flex-shrink:0;background:var(--s1);}
 /* ── Accordion sec-card (compact) ── */
-#m-hw .hw-sec-card{border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-bottom:.28rem;}
+#m-hw .hw-sec-card{border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-bottom:.28rem;display:flex;flex-direction:column;}
 #m-hw .hw-sec-card:last-child{margin-bottom:0;}
-#m-hw .hw-sec-card-header{display:flex;align-items:center;gap:.4rem;padding:.33rem .65rem;background:var(--s2);cursor:pointer;user-select:none;transition:background .12s;}
+#m-hw .hw-sec-card-header{display:flex;align-items:center;gap:.4rem;padding:.33rem .65rem;background:var(--s2);cursor:pointer;user-select:none;transition:background .12s;flex-shrink:0;}
 #m-hw .hw-sec-card-header:hover{background:var(--s3);}
 #m-hw .hw-sec-card-label{font-size:.62rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;flex:1;}
 #m-hw .hw-sec-card-count{font-size:.57rem;font-weight:700;background:var(--gold);color:#fff;padding:.03rem .32rem;border-radius:8px;display:none;}
 #m-hw .hw-sec-card-count.has-items{display:inline;}
 #m-hw .hw-sec-chevron{font-size:.57rem;color:var(--muted);transition:transform .18s;margin-left:.12rem;}
 #m-hw .hw-sec-card.sec-collapsed .hw-sec-chevron{transform:rotate(-90deg);}
-#m-hw .hw-sec-card-body{padding:.35rem .65rem .3rem;border-top:1px solid var(--border);}
+/* Body: flex column — items scroll, add-btn dính đáy */
+#m-hw .hw-sec-card-body{
+  border-top:1px solid var(--border);
+  display:flex;flex-direction:column;
+  max-height:0;  /* JS sets dynamically */
+  overflow:hidden;
+}
+#m-hw .hw-sec-card-body .hw-items-scroll{
+  overflow-y:auto;
+  padding:.32rem .65rem .1rem;
+  flex:1;
+  min-height:0;
+}
+#m-hw .hw-sec-card-body .hw-add-btn-wrap{
+  padding:.2rem .65rem .28rem;
+  flex-shrink:0;
+  background:var(--s1);
+  border-top:1px solid var(--line);
+}
 #m-hw .hw-sec-card.sec-collapsed .hw-sec-card-body{display:none;}
-#m-hw .hw-sec-card-body .hw-item-row:last-of-type{margin-bottom:0;}
-#m-hw .hw-add-btn{width:100%;margin-top:.22rem;font-size:.67rem;border-style:dashed;padding:.22rem;}
+#m-hw .hw-add-btn{width:100%;font-size:.67rem;border-style:dashed;padding:.22rem;margin:0;}
 /* ── Item row: compact (desktop) ── */
 #m-hw .hw-item-row{margin-bottom:.28rem;}
+#m-hw .hw-item-row:last-of-type{margin-bottom:0;}
 #m-hw .hw-item-row input{padding:.28rem .45rem;font-size:.76rem;}
 #m-hw .hw-item-row .hw-desc-toggle{padding:.12rem .38rem;font-size:.63rem;}
 .hw-sec-card-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+/* Class HW modal reuses m-hw accordion styles */
+#m-cls-hw-modal{width:680px;max-width:min(680px,96vw);max-height:min(88vh,740px);display:flex;flex-direction:column;padding:0;overflow:hidden;}
+#m-cls-hw-modal .hw-modal-footer{padding:.45rem 1.2rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.4rem;flex-shrink:0;background:var(--s1);}
 .ts-btn{padding:.42rem .3rem;background:var(--s2);border:1px solid var(--border);color:var(--muted);font-family:\"Be Vietnam Pro\",sans-serif;font-size:.72rem;cursor:pointer;transition:all .15s;text-align:center;line-height:1.3;}
 .ts-btn:hover{border-color:var(--gold);color:var(--text);}
 .ts-btn.sel{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:600;}
@@ -465,7 +486,7 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
   /* Accordion cards on mobile: tighter */
   #m-hw .hw-sec-card{margin-bottom:.3rem;}
   #m-hw .hw-sec-card-header{padding:.4rem .65rem;}
-  #m-hw .hw-sec-card-body{padding:.45rem .65rem .4rem;}
+  #m-hw .hw-sec-card-body{}
   #m-hw .hw-sec-card{overflow:visible;}
 
   /* ── HW item row: stack inputs vertically on mobile ── */
@@ -914,8 +935,8 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
           <span class="hw-sec-chevron">▾</span>
         </div>
         <div class="hw-sec-card-body">
-          <div id="hw-vocab-items"></div>
-          <button class="btn bg hw-add-btn" onclick="addHwItem('vocab')">+ Thêm mục</button>
+          <div class="hw-items-scroll"><div id="hw-vocab-items"></div></div>
+          <div class="hw-add-btn-wrap"><button class="btn bg hw-add-btn" onclick="addHwItem('vocab')">+ Thêm mục</button></div>
         </div>
       </div>
       <!-- ĐỌC -->
@@ -927,8 +948,8 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
           <span class="hw-sec-chevron">▾</span>
         </div>
         <div class="hw-sec-card-body">
-          <div id="hw-reading-items"></div>
-          <button class="btn bg hw-add-btn" onclick="addHwItem('reading')">+ Thêm mục</button>
+          <div class="hw-items-scroll"><div id="hw-reading-items"></div></div>
+          <div class="hw-add-btn-wrap"><button class="btn bg hw-add-btn" onclick="addHwItem('reading')">+ Thêm mục</button></div>
         </div>
       </div>
       <!-- NGHE -->
@@ -940,8 +961,8 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
           <span class="hw-sec-chevron">▾</span>
         </div>
         <div class="hw-sec-card-body">
-          <div id="hw-listening-items"></div>
-          <button class="btn bg hw-add-btn" onclick="addHwItem('listening')">+ Thêm mục</button>
+          <div class="hw-items-scroll"><div id="hw-listening-items"></div></div>
+          <div class="hw-add-btn-wrap"><button class="btn bg hw-add-btn" onclick="addHwItem('listening')">+ Thêm mục</button></div>
         </div>
       </div>
       <!-- KHÁC -->
@@ -953,8 +974,8 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
           <span class="hw-sec-chevron">▾</span>
         </div>
         <div class="hw-sec-card-body">
-          <div id="hw-other-items"></div>
-          <button class="btn bg hw-add-btn" onclick="addHwItem('other')">+ Thêm mục</button>
+          <div class="hw-items-scroll"><div id="hw-other-items"></div></div>
+          <div class="hw-add-btn-wrap"><button class="btn bg hw-add-btn" onclick="addHwItem('other')">+ Thêm mục</button></div>
         </div>
       </div>
       <!-- ĐỀ LUYỆN -->
@@ -967,8 +988,8 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
           <span class="hw-sec-chevron">▾</span>
         </div>
         <div class="hw-sec-card-body" style="background:#f8faff;">
-          <div id="hw-practice-items"></div>
-          <button class="btn bg hw-add-btn" style="border-color:#c5d0ee!important;color:#2457A0;" onclick="addHwItem('practice')">+ Thêm đề luyện</button>
+          <div class="hw-items-scroll"><div id="hw-practice-items"></div></div>
+          <div class="hw-add-btn-wrap"><button class="btn bg hw-add-btn" style="border-color:#c5d0ee!important;color:#2457A0;" onclick="addHwItem('practice')">+ Thêm đề luyện</button></div>
         </div>
       </div>
     </div>
@@ -1102,45 +1123,90 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
     </div>
   </div>
 </div>
-<!-- CLASS HW MODAL -->
+<!-- CLASS HW MODAL — reuses #m-hw accordion layout -->
 <div class="ov" id="m-cls-hw">
-  <div class="modal" style="width:580px;max-width:95vw;">
-    <h3 id="m-cls-hw-title">📋 Giao BTVN cho lớp</h3>
-    <div class="fl-row">
-      <div class="fl"><label>Ngày bắt đầu</label><input id="cls-hw-date" type="date"></div>
-      <div class="fl"><label>Ngày kết thúc (để trống = 1 ngày)</label><input id="cls-hw-enddate" type="date"></div>
-    </div>
-    <div class="fl-row">
-      <div class="fl" style="flex:2"><label>Tiêu đề (tuỳ chọn)</label><input id="cls-hw-label" type="text" placeholder="VD: 24/3 – 26/3"></div>
-    </div>
-    <div style="display:grid;gap:.9rem;margin-top:.4rem;">
-      <div style="background:var(--s2);border:1px solid var(--border);padding:.85rem;">
-        <div style="font-size:.67rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#C9963A;margin-bottom:.6rem;">📗 Từ vựng</div>
-        <div id="cls-hw-vocab-items"></div>
-        <button class="btn bg" style="width:100%;margin-top:.4rem;font-size:.73rem;" onclick="addClsHwItem('vocab')">+ Thêm mục</button>
-      </div>
-      <div style="background:var(--s2);border:1px solid var(--border);padding:.85rem;">
-        <div style="font-size:.67rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#4A9B5E;margin-bottom:.6rem;">📘 Đọc</div>
-        <div id="cls-hw-reading-items"></div>
-        <button class="btn bg" style="width:100%;margin-top:.4rem;font-size:.73rem;" onclick="addClsHwItem('reading')">+ Thêm mục</button>
-      </div>
-      <div style="background:var(--s2);border:1px solid var(--border);padding:.85rem;">
-        <div style="font-size:.67rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#3B82C4;margin-bottom:.6rem;">📙 Nghe</div>
-        <div id="cls-hw-listening-items"></div>
-        <button class="btn bg" style="width:100%;margin-top:.4rem;font-size:.73rem;" onclick="addClsHwItem('listening')">+ Thêm mục</button>
-      </div>
-      <div style="background:var(--s2);border:1px solid var(--border);padding:.85rem;">
-        <div style="font-size:.67rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#A07040;margin-bottom:.6rem;">⭐ Khác</div>
-        <div id="cls-hw-other-items"></div>
-        <button class="btn bg" style="width:100%;margin-top:.4rem;font-size:.73rem;" onclick="addClsHwItem('other')">+ Thêm mục</button>
-      </div>
-      <div style="background:#f0f4ff;border:1px solid #c5d0ee;padding:.85rem;">
-        <div style="font-size:.67rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#2457A0;margin-bottom:.3rem;">📝 Đề luyện thi</div>
-        <div id="cls-hw-practice-items"></div>
-        <button class="btn bg" style="width:100%;margin-top:.4rem;font-size:.73rem;border-color:#c5d0ee!important;color:#2457A0;" onclick="addClsHwItem('practice')">+ Thêm đề luyện</button>
+  <div class="modal" id="m-cls-hw-modal">
+    <div class="hw-modal-header" style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;padding:.55rem 1.2rem .5rem;border-bottom:1px solid var(--border);">
+      <h3 id="m-cls-hw-title" style="margin:0;font-family:'Lora',serif;font-size:.92rem;color:var(--gold);white-space:nowrap;flex-shrink:0;">📋 Giao BTVN cho lớp</h3>
+      <div style="display:flex;gap:.4rem;align-items:flex-end;flex:1;flex-wrap:nowrap;">
+        <div class="fl" style="margin:0;flex:1;min-width:0;">
+          <label style="font-size:.56rem;margin-bottom:.15rem;display:block;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);">Ngày bắt đầu</label>
+          <input id="cls-hw-date" type="date" style="width:100%;padding:.3rem .42rem;font-size:.76rem;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:'Be Vietnam Pro',sans-serif;outline:none;box-sizing:border-box;">
+        </div>
+        <div class="fl" style="margin:0;flex:1;min-width:0;">
+          <label style="font-size:.56rem;margin-bottom:.15rem;display:block;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);">Ngày kết thúc <span style="font-weight:400;text-transform:none">(trống=1 ngày)</span></label>
+          <input id="cls-hw-enddate" type="date" style="width:100%;padding:.3rem .42rem;font-size:.76rem;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:'Be Vietnam Pro',sans-serif;outline:none;box-sizing:border-box;">
+        </div>
+        <div class="fl" style="margin:0;flex:1.5;min-width:0;">
+          <label style="font-size:.56rem;margin-bottom:.15rem;display:block;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);">Tiêu đề <span style="font-weight:400;text-transform:none">(tuỳ chọn)</span></label>
+          <input id="cls-hw-label" type="text" placeholder="VD: 24/3 – 26/3" style="width:100%;padding:.3rem .42rem;font-size:.76rem;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:'Be Vietnam Pro',sans-serif;outline:none;box-sizing:border-box;">
+        </div>
       </div>
     </div>
-    <div class="mf"><button class="btn bg" onclick="closeClsHwModal()">Huỷ</button><button class="btn bp" onclick="saveClsHw()">Giao cho cả lớp</button></div>
+    <div class="hw-modal-body" style="flex:1;overflow-y:auto;padding:.45rem 1.2rem;display:flex;flex-direction:column;gap:0;min-height:0;">
+      <div class="hw-sec-card" id="cls-sec-card-vocab">
+        <div class="hw-sec-card-header" onclick="toggleClsHwSec('vocab')">
+          <span class="hw-sec-card-dot" style="background:#C9963A"></span>
+          <span class="hw-sec-card-label" style="color:#C9963A">📗 Từ vựng</span>
+          <span class="hw-sec-card-count" id="cls-sec-count-vocab">0</span>
+          <span class="hw-sec-chevron">▾</span>
+        </div>
+        <div class="hw-sec-card-body">
+          <div class="hw-items-scroll"><div id="cls-hw-vocab-items"></div></div>
+          <div class="hw-add-btn-wrap"><button class="btn bg hw-add-btn" onclick="addClsHwItem('vocab')">+ Thêm mục</button></div>
+        </div>
+      </div>
+      <div class="hw-sec-card sec-collapsed" id="cls-sec-card-reading">
+        <div class="hw-sec-card-header" onclick="toggleClsHwSec('reading')">
+          <span class="hw-sec-card-dot" style="background:#4A9B5E"></span>
+          <span class="hw-sec-card-label" style="color:#4A9B5E">📘 Đọc</span>
+          <span class="hw-sec-card-count" id="cls-sec-count-reading">0</span>
+          <span class="hw-sec-chevron">▾</span>
+        </div>
+        <div class="hw-sec-card-body">
+          <div class="hw-items-scroll"><div id="cls-hw-reading-items"></div></div>
+          <div class="hw-add-btn-wrap"><button class="btn bg hw-add-btn" onclick="addClsHwItem('reading')">+ Thêm mục</button></div>
+        </div>
+      </div>
+      <div class="hw-sec-card sec-collapsed" id="cls-sec-card-listening">
+        <div class="hw-sec-card-header" onclick="toggleClsHwSec('listening')">
+          <span class="hw-sec-card-dot" style="background:#3B82C4"></span>
+          <span class="hw-sec-card-label" style="color:#3B82C4">📙 Nghe</span>
+          <span class="hw-sec-card-count" id="cls-sec-count-listening">0</span>
+          <span class="hw-sec-chevron">▾</span>
+        </div>
+        <div class="hw-sec-card-body">
+          <div class="hw-items-scroll"><div id="cls-hw-listening-items"></div></div>
+          <div class="hw-add-btn-wrap"><button class="btn bg hw-add-btn" onclick="addClsHwItem('listening')">+ Thêm mục</button></div>
+        </div>
+      </div>
+      <div class="hw-sec-card sec-collapsed" id="cls-sec-card-other">
+        <div class="hw-sec-card-header" onclick="toggleClsHwSec('other')">
+          <span class="hw-sec-card-dot" style="background:#A07040"></span>
+          <span class="hw-sec-card-label" style="color:#A07040">⭐ Khác</span>
+          <span class="hw-sec-card-count" id="cls-sec-count-other">0</span>
+          <span class="hw-sec-chevron">▾</span>
+        </div>
+        <div class="hw-sec-card-body">
+          <div class="hw-items-scroll"><div id="cls-hw-other-items"></div></div>
+          <div class="hw-add-btn-wrap"><button class="btn bg hw-add-btn" onclick="addClsHwItem('other')">+ Thêm mục</button></div>
+        </div>
+      </div>
+      <div class="hw-sec-card sec-collapsed" id="cls-sec-card-practice" style="border-color:#c5d0ee;">
+        <div class="hw-sec-card-header" style="background:#f0f4ff;" onclick="toggleClsHwSec('practice')">
+          <span class="hw-sec-card-dot" style="background:#2457A0"></span>
+          <span class="hw-sec-card-label" style="color:#2457A0">📝 Đề luyện thi</span>
+          <span style="margin-left:.4rem;font-size:.63rem;color:#6070a0;font-weight:400;text-transform:none;letter-spacing:0;flex:1">→ nộp link → nhập điểm ở Tab Điểm số</span>
+          <span class="hw-sec-card-count" id="cls-sec-count-practice">0</span>
+          <span class="hw-sec-chevron">▾</span>
+        </div>
+        <div class="hw-sec-card-body" style="background:#f8faff;">
+          <div class="hw-items-scroll"><div id="cls-hw-practice-items"></div></div>
+          <div class="hw-add-btn-wrap" style="background:#f8faff;"><button class="btn bg hw-add-btn" style="border-color:#c5d0ee!important;color:#2457A0;" onclick="addClsHwItem('practice')">+ Thêm đề luyện</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="hw-modal-footer"><button class="btn bg" onclick="closeClsHwModal()">Huỷ</button><button class="btn bp" onclick="saveClsHw()">🏫 Giao cho cả lớp</button></div>
   </div>
 </div>
 
@@ -1968,9 +2034,18 @@ function updateHwSecBadges(){
     var badge=document.getElementById('sec-count-'+sec);
     var card=document.getElementById('sec-card-'+sec);
     if(badge){badge.textContent=n;badge.classList.toggle('has-items',n>0);}
-    // Auto-expand if has items, collapse if empty (only when count changes)
     if(card){
       if(n>0) card.classList.remove('sec-collapsed');
+      // Dynamic max-height: each item ~34px + padding; cap at 3 items visible
+      var body=card.querySelector('.hw-sec-card-body');
+      var scroll=card.querySelector('.hw-items-scroll');
+      if(body&&scroll){
+        var itemH=36; // px per item row (compact)
+        var maxItems=Math.min(n,3);
+        var scrollH=maxItems>0?maxItems*itemH+8:0;
+        scroll.style.maxHeight=scrollH+'px';
+        body.style.maxHeight=(scrollH+36)+'px'; // +36 for add-btn row
+      }
     }
   });
 }
@@ -2538,6 +2613,10 @@ function openEditClsModal(){
 
 /* ─── CLASS HW ─── */
 function openClsHwModal(editId){
+  HW_SECTIONS.forEach(function(sec){
+    var card=document.getElementById('cls-sec-card-'+sec);
+    if(card){ if(sec==='vocab') card.classList.remove('sec-collapsed'); else card.classList.add('sec-collapsed'); }
+  });
   clsHwEditId = editId||null;
   clsHwDraft = {vocab:[],reading:[],listening:[],other:[],practice:[]};
   var cls = allClasses[CLS_ID];
@@ -2565,6 +2644,7 @@ function renderClsHwModal(){
     el.innerHTML = '';
     (clsHwDraft[sec]||[]).forEach(function(_,i){ el.appendChild(buildClsHwItemRow(sec,i)); });
   });
+  updateClsHwSecBadges();
 }
 
 function buildClsHwItemRow(sec, i){
@@ -2660,6 +2740,30 @@ function syncClsDescFromEditor(){
   }
 }
 
+function toggleClsHwSec(sec){
+  var card=document.getElementById('cls-sec-card-'+sec);
+  if(card) card.classList.toggle('sec-collapsed');
+}
+function updateClsHwSecBadges(){
+  HW_SECTIONS.forEach(function(sec){
+    var n=(clsHwDraft[sec]||[]).length;
+    var badge=document.getElementById('cls-sec-count-'+sec);
+    var card=document.getElementById('cls-sec-card-'+sec);
+    if(badge){badge.textContent=n;badge.classList.toggle('has-items',n>0);}
+    if(card){
+      if(n>0) card.classList.remove('sec-collapsed');
+      var body=card.querySelector('.hw-sec-card-body');
+      var scroll=card.querySelector('.hw-items-scroll');
+      if(body&&scroll){
+        var itemH=36;
+        var maxItems=Math.min(n,3);
+        var scrollH=maxItems>0?maxItems*itemH+8:0;
+        scroll.style.maxHeight=scrollH+'px';
+        body.style.maxHeight=(scrollH+36)+'px';
+      }
+    }
+  });
+}
 function addClsHwItem(sec){
   clsHwDraft[sec].push({text:'',link:'',desc:''});
   renderClsHwModal();
