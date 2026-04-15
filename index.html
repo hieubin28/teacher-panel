@@ -317,19 +317,21 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
 .modal h3{font-family:'Lora',serif;font-size:1.15rem;color:var(--gold);margin-bottom:1.4rem;}
 .mf{display:flex;justify-content:flex-end;gap:.5rem;margin-top:1.3rem;padding-top:.9rem;border-top:1px solid var(--border);}
 /* ── m-hw redesign ── */
-#m-hw .modal{width:700px;max-width:96vw;max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;}
-#m-hw .hw-modal-header{padding:1.4rem 1.8rem 1rem;border-bottom:1px solid var(--border);flex-shrink:0;}
-#m-hw .hw-modal-header h3{margin:0;font-family:'Lora',serif;font-size:1.15rem;color:var(--gold);}
-#m-hw .hw-modal-meta{display:flex;gap:.7rem;margin-top:1rem;flex-wrap:wrap;}
-#m-hw .hw-modal-meta .fl{margin-bottom:0;flex:1;min-width:140px;}
-#m-hw .hw-modal-body{flex:1;overflow-y:auto;padding:1.2rem 1.8rem;display:grid;gap:.75rem;}
-#m-hw .hw-modal-footer{padding:.9rem 1.8rem;border-top:2px solid var(--border);display:flex;justify-content:flex-end;gap:.55rem;flex-shrink:0;background:var(--s1);}
+#m-hw .modal{width:700px;max-width:96vw;max-height:90vh;display:flex;flex-direction:column;padding:0;overflow:hidden;}
+#m-hw .hw-modal-header{padding:1rem 1.5rem .85rem;border-bottom:1px solid var(--border);flex-shrink:0;}
+#m-hw .hw-modal-header h3{margin:0 0 .7rem;font-family:'Lora',serif;font-size:1.1rem;color:var(--gold);}
+#m-hw .hw-modal-meta{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:.6rem;}
+#m-hw .hw-modal-meta .fl{margin-bottom:0;}
+#m-hw .hw-modal-meta .fl label{font-size:.62rem;}
+#m-hw .hw-modal-meta .fl input{padding:.4rem .55rem;font-size:.8rem;}
+#m-hw .hw-modal-body{flex:1;overflow-y:auto;padding:1rem 1.5rem;display:grid;gap:.6rem;min-height:0;}
+#m-hw .hw-modal-footer{padding:.75rem 1.5rem;border-top:2px solid var(--border);display:flex;justify-content:flex-end;gap:.55rem;flex-shrink:0;background:var(--s1);}
 #m-hw .hw-sec-card{border:1px solid var(--border);border-radius:2px;overflow:hidden;}
-#m-hw .hw-sec-card-header{display:flex;align-items:center;gap:.5rem;padding:.6rem .9rem;background:var(--s2);}
-#m-hw .hw-sec-card-label{font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;}
-#m-hw .hw-sec-card-body{padding:.7rem .9rem .6rem;}
+#m-hw .hw-sec-card-header{display:flex;align-items:center;gap:.5rem;padding:.5rem .8rem;background:var(--s2);}
+#m-hw .hw-sec-card-label{font-size:.65rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;}
+#m-hw .hw-sec-card-body{padding:.6rem .8rem .5rem;}
 #m-hw .hw-sec-card-body .hw-item-row:last-of-type{margin-bottom:0;}
-#m-hw .hw-add-btn{width:100%;margin-top:.45rem;font-size:.73rem;border-style:dashed;}
+#m-hw .hw-add-btn{width:100%;margin-top:.4rem;font-size:.72rem;border-style:dashed;padding:.35rem;}
 .hw-sec-card-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .ts-btn{padding:.42rem .3rem;background:var(--s2);border:1px solid var(--border);color:var(--muted);font-family:\"Be Vietnam Pro\",sans-serif;font-size:.72rem;cursor:pointer;transition:all .15s;text-align:center;line-height:1.3;}
 .ts-btn:hover{border-color:var(--gold);color:var(--text);}
@@ -377,6 +379,14 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
 .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:19;}
 .sb-overlay.show{display:block;}
 
+/* ─── LAPTOP NHỎ / TABLET (769px–1100px) ─── */
+@media(min-width:769px) and (max-width:1100px){
+  #m-hw .modal{max-height:94vh;width:min(680px,92vw);}
+  #m-hw .hw-modal-header{padding:1rem 1.3rem .8rem;}
+  #m-hw .hw-modal-body{padding:.85rem 1.3rem;gap:.5rem;}
+  #m-hw .hw-modal-footer{padding:.7rem 1.3rem;}
+}
+
 /* ─── MOBILE RESPONSIVE ─── */
 @media(max-width:768px){
   /* ── Sidebar ── */
@@ -414,13 +424,7 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
   .fl-row{flex-direction:column;gap:.5rem;}
 
   /* ── Modal ── */
-  .modal{width:calc(100vw - 1.5rem);max-height:92vh;padding:1.2rem;}
-  #m-hw .modal{max-height:96vh;}
-  #m-hw .hw-modal-header{padding:1rem 1.2rem .8rem;}
-  #m-hw .hw-modal-body{padding:.9rem 1.2rem;}
-  #m-hw .hw-modal-footer{padding:.7rem 1.2rem;}
-  #m-hw .hw-modal-meta{flex-direction:column;gap:.5rem;}
-  #m-hw .hw-modal-meta .fl{min-width:auto;}
+  .modal{width:calc(100vw - 1.5rem);max-height:95vh;padding:1.2rem;}
 
   /* ── HW filters & sheets ── */
   .hw-filter-bar{gap:.2rem;flex-wrap:wrap;}
@@ -429,17 +433,39 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
   .hw-link-li{flex-wrap:wrap;gap:.35rem;}
   .hw-link-actions{flex-wrap:wrap;}
 
+  /* ── HW modal: full-screen on mobile, compact header ── */
+  #m-hw .modal{
+    width:100vw;max-width:100vw;
+    height:100dvh;max-height:100dvh;
+    border-radius:0;border:none;
+    display:flex;flex-direction:column;
+  }
+  #m-hw .hw-modal-header{padding:.7rem 1rem .65rem;}
+  #m-hw .hw-modal-header h3{font-size:.95rem;margin-bottom:.5rem;}
+  /* Meta fields: stack to 2 cols on mobile */
+  #m-hw .hw-modal-meta{grid-template-columns:1fr 1fr;gap:.4rem;}
+  /* Tiêu đề span full width on 3rd row */
+  #m-hw .hw-modal-meta .fl:last-child{grid-column:1/-1;}
+  #m-hw .hw-modal-meta .fl label{font-size:.6rem;}
+  #m-hw .hw-modal-meta .fl input{padding:.38rem .5rem;font-size:.78rem;}
+  #m-hw .hw-modal-body{padding:.65rem .9rem;gap:.45rem;}
+  #m-hw .hw-modal-footer{padding:.6rem .9rem;}
+  #m-hw .hw-sec-card-header{padding:.42rem .7rem;}
+  #m-hw .hw-sec-card-body{padding:.5rem .7rem .4rem;}
+
+  /* ── HW sec-card overflow fix (allow wrap) ── */
+  #m-hw .hw-sec-card{overflow:visible;}
+
   /* ── HW item row: stack inputs vertically on mobile ── */
-  #m-hw .hw-sec-card{overflow:visible;}/* allow wrapped rows to show */
   .hw-item-row .hw-item-top{flex-wrap:wrap;gap:.35rem;}
   .hw-item-row .hw-text-wrap{flex:none;width:100%;order:1;}
   .hw-item-row .hw-text-wrap input{width:100%;box-sizing:border-box;}
   .hw-item-row input.link-inp{flex:none;width:calc(100% - 2.2rem);order:2;box-sizing:border-box;}
   .hw-item-row .hw-desc-toggle{order:3;font-size:.65rem;padding:.16rem .4rem;}
   .hw-item-row .rm{order:4;margin-left:auto;}
-  /* Desc editor toolbar wraps on mobile */
+  /* Desc toolbar wraps */
   .hw-desc-toolbar{flex-wrap:wrap;gap:3px;}
-  .hw-desc-toolbar span{display:none;}/* hide hint text to save space */
+  .hw-desc-toolbar span{display:none;}
 
   /* ── Progress rows ── */
   .prog-row{flex-wrap:wrap;gap:.4rem;}
