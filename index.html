@@ -7,6 +7,12 @@
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="teacher-manifest.json">
+<meta name="theme-color" content="#1A2340">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TA² Teacher">
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Be+Vietnam+Pro:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1193,6 +1199,124 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
+
+/* ═══════════════════════════════════════════════════════════════
+   TEACHER PUSH NOTIFICATION SETUP
+   ─ Service Worker: teacher-sw.js
+   ─ Subscriptions lưu tại: teacherSubscriptions/{deviceId}
+   ─ VAPID key: lấy từ Firebase Console > Project Settings >
+     Cloud Messaging > Web Push certificates (thầy điền vào đây)
+   ═══════════════════════════════════════════════════════════════ */
+var TEACHER_VAPID_PUBLIC_KEY = 'BJtWiqP8jXcjxIu-lGZohTfBP_7O_waGaHbh_LkljfmOVb2L3WisjSg1potR3rnOx6SxHcN7Bz66epbGI97vgG8';
+
+/* Tạo device ID ổn định (lưu localStorage) */
+function getTeacherDeviceId(){
+  var k='teacher_device_id';
+  var id=localStorage.getItem(k);
+  if(!id){ id='td_'+Date.now()+'_'+Math.random().toString(36).slice(2,8); localStorage.setItem(k,id); }
+  return id;
+}
+
+function urlBase64ToUint8Array(base64String){
+  var padding='='.repeat((4-base64String.length%4)%4);
+  var base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  var raw=atob(base64);
+  var arr=new Uint8Array(raw.length);
+  for(var i=0;i<raw.length;i++) arr[i]=raw.charCodeAt(i);
+  return arr;
+}
+
+var _teacherSwReg = null; // SW registration reference
+
+function teacherPushSetup(){
+  if(!('serviceWorker' in navigator && 'PushManager' in window)){
+    console.log('[TeacherPush] Browser không hỗ trợ push.');
+    return;
+  }
+  if(TEACHER_VAPID_PUBLIC_KEY === 'REPLACE_WITH_YOUR_VAPID_PUBLIC_KEY'){
+    console.warn('[TeacherPush] Chưa set VAPID key — bỏ qua setup push.');
+    return;
+  }
+  navigator.serviceWorker.register('teacher-sw.js').then(function(reg){
+    _teacherSwReg = reg;
+    console.log('[TeacherPush] SW registered:', reg.scope);
+    return Notification.requestPermission();
+  }).then(function(perm){
+    if(perm !== 'granted'){
+      console.log('[TeacherPush] Permission denied');
+      return;
+    }
+    return _teacherSwReg.pushManager.getSubscription().then(function(existing){
+      if(existing) return existing;
+      return _teacherSwReg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(TEACHER_VAPID_PUBLIC_KEY)
+      });
+    });
+  }).then(function(sub){
+    if(!sub) return;
+    var deviceId = getTeacherDeviceId();
+    var subJson = sub.toJSON();
+    db.ref('teacherSubscriptions/'+deviceId).set({
+      subscription: subJson,
+      deviceId: deviceId,
+      updatedAt: new Date().toISOString(),
+      userAgent: navigator.userAgent.slice(0,120)
+    });
+    console.log('[TeacherPush] Subscription saved → teacherSubscriptions/'+deviceId);
+  }).catch(function(err){
+    console.error('[TeacherPush] Setup error:', err);
+  });
+}
+
+/* ═══ BADGE: đếm HV nộp link / hoàn thành nhiệm vụ hôm nay ═══ */
+var _teacherBadgeState = { daylinks: 0, done: 0 };
+
+function updateTeacherActivityBadge(){
+  var total = _teacherBadgeState.daylinks + _teacherBadgeState.done;
+  var el = document.getElementById('nv-dash');
+  if(!el) return;
+  el.innerHTML = '📊 Tổng quan' + (total > 0 ? '<span class="cnt" style="background:var(--sage)">'+total+'</span>' : '');
+}
+
+function initTeacherActivityListeners(){
+  var td = today();
+  // Lắng nghe daylinks theo ngày hôm nay → đếm số HV đã nộp link
+  db.ref('daylinks').on('value', function(snap){
+    var allLinks = snap.val() || {};
+    var count = 0;
+    Object.keys(allLinks).forEach(function(sid){
+      var svLinks = allLinks[sid] || {};
+      Object.keys(svLinks).forEach(function(hwId){
+        var entry = svLinks[hwId];
+        if(entry && entry.submittedAt){
+          var d = entry.submittedAt.slice(0,10);
+          if(d === td) count++;
+        }
+      });
+    });
+    _teacherBadgeState.daylinks = count;
+    updateTeacherActivityBadge();
+  });
+  // Lắng nghe progress theo ngày hôm nay → đếm số HV done===total
+  db.ref('progress').on('value', function(snap){
+    var allProg = snap.val() || {};
+    var count = 0;
+    Object.keys(allProg).forEach(function(sid){
+      var svProg = allProg[sid] || {};
+      var entry = svProg[td];
+      if(entry && entry.total > 0 && entry.done >= entry.total) count++;
+    });
+    _teacherBadgeState.done = count;
+    updateTeacherActivityBadge();
+  });
+}
+
+/* Gọi khi trang load xong */
+document.addEventListener('DOMContentLoaded', function(){
+  teacherPushSetup();
+  initTeacherActivityListeners();
+});
 
 /* ═══ STATE ═══ */
 var CID = null;
