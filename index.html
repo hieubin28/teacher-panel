@@ -1647,7 +1647,11 @@ function renderDash(){
   var yesterday=_yd.getFullYear()+'-'+String(_yd.getMonth()+1).padStart(2,'0')+'-'+String(_yd.getDate()).padStart(2,'0');
   var fullyDone=0;
   students.forEach(function(s){
-    var todayHw=(s.homework||[]).find(function(h){return h.date===td;});
+    // Tìm bài tập đang active hôm nay (date <= td <= endDate)
+    var todayHw=(s.homework||[]).find(function(h){
+      var start=h.date, end=h.endDate||h.date;
+      return td>=start && td<=end;
+    });
     if(todayHw){
       var linked=allDayLinks[s.id]&&allDayLinks[s.id][todayHw.id];
       if(linked) fullyDone++;
@@ -1661,7 +1665,7 @@ function renderDash(){
   // Build all dash rows data for filtering/pagination
   var allDashRows=[];
   students.forEach(function(s){
-    var hw=(s.homework||[]).find(function(h){ return h.date===td; });
+    var hw=(s.homework||[]).find(function(h){ var e=h.endDate||h.date; return td>=h.date&&td<=e; });
     var total=hw?countHwItemsT(hw):0;
     var linked=hw?(allDayLinks[s.id]&&allDayLinks[s.id][hw.id]):null;
     var isFull=!!(linked);
