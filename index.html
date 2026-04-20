@@ -1270,52 +1270,9 @@ function teacherPushSetup(){
 }
 
 /* ═══ BADGE: đếm HV nộp link / hoàn thành nhiệm vụ hôm nay ═══ */
-var _teacherBadgeState = { daylinks: 0, done: 0 };
-
-function updateTeacherActivityBadge(){
-  var total = _teacherBadgeState.daylinks + _teacherBadgeState.done;
-  var el = document.getElementById('nv-dash');
-  if(!el) return;
-  el.innerHTML = '📊 Tổng quan' + (total > 0 ? '<span class="cnt" style="background:var(--sage)">'+total+'</span>' : '');
-}
-
-function initTeacherActivityListeners(){
-  var td = today();
-  // Lắng nghe daylinks theo ngày hôm nay → đếm số HV đã nộp link
-  db.ref('daylinks').on('value', function(snap){
-    var allLinks = snap.val() || {};
-    var count = 0;
-    Object.keys(allLinks).forEach(function(sid){
-      var svLinks = allLinks[sid] || {};
-      Object.keys(svLinks).forEach(function(hwId){
-        var entry = svLinks[hwId];
-        if(entry && entry.submittedAt){
-          var d = entry.submittedAt.slice(0,10);
-          if(d === td) count++;
-        }
-      });
-    });
-    _teacherBadgeState.daylinks = count;
-    updateTeacherActivityBadge();
-  });
-  // Lắng nghe progress theo ngày hôm nay → đếm số HV done===total
-  db.ref('progress').on('value', function(snap){
-    var allProg = snap.val() || {};
-    var count = 0;
-    Object.keys(allProg).forEach(function(sid){
-      var svProg = allProg[sid] || {};
-      var entry = svProg[td];
-      if(entry && entry.total > 0 && entry.done >= entry.total) count++;
-    });
-    _teacherBadgeState.done = count;
-    updateTeacherActivityBadge();
-  });
-}
-
 /* Gọi khi trang load xong */
 document.addEventListener('DOMContentLoaded', function(){
   teacherPushSetup();
-  initTeacherActivityListeners();
 });
 
 /* ═══ STATE ═══ */
