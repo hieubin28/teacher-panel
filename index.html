@@ -546,6 +546,7 @@ body{font-family:\"Be Vietnam Pro\",sans-serif;background:var(--bg);color:var(--
   </div>
   <div class="sb-bottom">
     <button class="btn-add" onclick="openM('m-add-sv')">+ Thêm học viên</button>
+    <button id="btn-notif-setup" onclick="teacherPushSetupManual()" style="width:100%;margin-top:.5rem;padding:.55rem;background:transparent;border:1px solid var(--sb-border);color:var(--sb-muted);font-size:.75rem;border-radius:6px;cursor:pointer;">🔔 Bật thông báo</button>
   </div>
 </div>
 
@@ -1237,21 +1238,44 @@ function teacherPushSetup(){
     console.warn('[TeacherPush] Chưa set VAPID key — bỏ qua setup push.');
     return;
   }
+  // Chỉ đăng ký SW — KHÔNG xin permission tự động
   navigator.serviceWorker.register('teacher-sw.js').then(function(reg){
     _teacherSwReg = reg;
     console.log('[TeacherPush] SW registered:', reg.scope);
-    return Notification.requestPermission();
-  }).then(function(perm){
+    // Nếu đã có permission rồi thì subscribe luôn
+    if(Notification.permission === 'granted'){
+      _teacherDoSubscribe();
+    } else {
+      // Hiện nút bật thông báo
+      var btn = document.getElementById('btn-notif-setup');
+      if(btn) btn.style.color = 'var(--sb-gold)';
+    }
+  }).catch(function(err){
+    console.error('[TeacherPush] SW register error:', err);
+  });
+}
+
+function teacherPushSetupManual(){
+  if(!_teacherSwReg){
+    alert('Service Worker chưa sẵn sàng, thử lại sau vài giây.');
+    return;
+  }
+  Notification.requestPermission().then(function(perm){
     if(perm !== 'granted'){
-      console.log('[TeacherPush] Permission denied');
+      alert('Thầy cần bấm Allow để nhận thông báo.');
       return;
     }
-    return _teacherSwReg.pushManager.getSubscription().then(function(existing){
-      if(existing) return existing;
-      return _teacherSwReg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(TEACHER_VAPID_PUBLIC_KEY)
-      });
+    _teacherDoSubscribe();
+  });
+}
+
+function _teacherDoSubscribe(){
+  if(!_teacherSwReg) return;
+  _teacherSwReg.pushManager.getSubscription().then(function(existing){
+    if(existing) return existing;
+    return _teacherSwReg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(TEACHER_VAPID_PUBLIC_KEY)
     });
   }).then(function(sub){
     if(!sub) return;
@@ -1263,9 +1287,11 @@ function teacherPushSetup(){
       updatedAt: new Date().toISOString(),
       userAgent: navigator.userAgent.slice(0,120)
     });
+    var btn = document.getElementById('btn-notif-setup');
+    if(btn){ btn.textContent = '🔔 Thông báo đã bật'; btn.style.color = 'var(--sb-gold)'; btn.disabled = true; }
     console.log('[TeacherPush] Subscription saved → teacherSubscriptions/'+deviceId);
   }).catch(function(err){
-    console.error('[TeacherPush] Setup error:', err);
+    console.error('[TeacherPush] Subscribe error:', err);
   });
 }
 
